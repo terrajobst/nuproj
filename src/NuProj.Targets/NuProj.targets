@@ -213,7 +213,7 @@
   <Target Name="ConvertItems"
           DependsOnTargets="ExpandProjectReferences">
     <CreateItem Include="@(Library)"
-                AdditionalMetadata="TargetPath=lib\%(Library.TargetFramework)">
+                AdditionalMetadata="TargetPath=lib\%(Library.TargetFramework);Type=Library">
       <Output TaskParameter="Include"
               ItemName="File"/>
     </CreateItem>
@@ -224,17 +224,17 @@
                              Condition="'%(Content.Link)' == ''" />
     </ItemGroup>
     <CreateItem Include="@(_LinkedContentFiles)"
-                AdditionalMetadata="TargetPath=%(Link)">
+                AdditionalMetadata="TargetPath=%(Link);Type=Content">
       <Output TaskParameter="Include"
               ItemName="File"/>
     </CreateItem>
     <CreateItem Include="@(_UnlinkedContentFiles)"
-                AdditionalMetadata="TargetPath=%(RelativeDir)">
+                AdditionalMetadata="TargetPath=%(RelativeDir);Type=Content">
       <Output TaskParameter="Include"
               ItemName="File"/>
     </CreateItem>
     <CreateItem Include="@(Tool)"
-                AdditionalMetadata="TargetPath=tools\%(Tool.TargetPath)">
+                AdditionalMetadata="TargetPath=tools\%(Tool.TargetPath);Type=Tool">
       <Output TaskParameter="Include"
               ItemName="File"/>
     </CreateItem>
@@ -356,23 +356,29 @@
           DependsOnTargets="GetFiles;GetFileDependencies">
 
       <ItemGroup>
-        <!-- 
+        <!--
             We create a new item list where the identity is the simple file name
             so that we can filter out the dependencies.
         -->
-        <_FileTargetPath Include="@(File->'%(FileName)%(Extension)')">
+        <_NonLibraryTargetPath Include="@(File->'%(FileName)%(Extension)')"
+                               Condition="'%(Type)' != 'Library'">
             <OriginalItemSpec>%(File.Identity)</OriginalItemSpec>
-        </_FileTargetPath>
-        <!-- 
-            Now we can remove all files from _FileTargetPath that come from dependencies.
+        </_NonLibraryTargetPath>
+        <_LibraryTargetPath Include="@(File->'%(FileName)%(Extension)')"
+                            Condition="'%(Type)' == 'Library'">
+            <OriginalItemSpec>%(File.Identity)</OriginalItemSpec>
+        </_LibraryTargetPath>
+        <!--
+            Now we can remove all files from _LibraryTargetPath that come from dependencies.
         -->
         <_FileDependencyTargetPath Include="@(FileDependency->'%(FileName)%(Extension)')" />
-        <_FileTargetPath Remove="@(_FileDependencyTargetPath)" />
-        <!-- 
+        <_LibraryTargetPath Remove="@(_FileDependencyTargetPath)" />
+        <!--
             In order to produce the final list we have to restore the original item spec.
         -->
         <PackageFile Remove="@(PackageFile)" />
-        <PackageFile Include="@(_FileTargetPath->'%(OriginalItemSpec)')" />
+        <PackageFile Include="@(_NonLibraryTargetPath->'%(OriginalItemSpec)')" />
+        <PackageFile Include="@(_LibraryTargetPath->'%(OriginalItemSpec)')" />
       </ItemGroup>
 
   </Target>
