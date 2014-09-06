@@ -3,6 +3,9 @@
 
   <Import Project="$(CustomBeforeNuProjTargets)" Condition="'$(CustomBeforeNuProjTargets)' != '' and Exists('$(CustomBeforeNuProjTargets)')"/>
 
+  <Import Project="ProjectReferenceClosure.targets" />
+
+
   <!--
       NUSPEC PATH
   -->
@@ -64,6 +67,7 @@
     <ProjectProperties>
       Configuration=$(Configuration);
       Platform=$(Platform);
+      CustomAfterMicrosoftCommonTargets=$(MSBuildThisFileDirectory)ProjectReferenceClosure.targets
     </ProjectProperties>
   </PropertyGroup>
 
@@ -114,7 +118,7 @@
         @(ProjectReference)         The project references
 
     OUTPUTS:
-        @(Library)                  The library Files to be packaged
+        @(Library)                  The library items to be packaged
 
     =================================================================================================================== -->
 
@@ -457,7 +461,8 @@
     =================================================================================================================== -->
 
   <Target Name="GetNuGetFileDependencies"
-          Returns="@(NuGetFileDependency)">
+          Returns="@(NuGetFileDependency)"
+          DependsOnTargets="GetNuGetPackageDependencies">
       <ItemGroup>
         <NuGetFileDependency Include="%(NuGetDependency.PackageDirectoryPath)\**\*"
                              Condition="'%(NuGetDependency.PackageDirectoryPath)' != ''" />
@@ -510,10 +515,53 @@
 
   <!--
     ===================================================================================================================
+    GetPackagesConfigFiles
+    ===================================================================================================================
+
+    Get the packages configuration files that come from closure of regular, i.e. non-.nuproj NuGet dependencies.
+
+    INPUTS:
+        @(ProjectReferenceClosure)      The closure of project references to be packaged
+
+    OUTPUTS:
+        @(PackagesConfig)               The NuGet dependencies of this package.
+
+    =================================================================================================================== -->
+  
+  <Target Name="GetPackagesConfigFiles"
+          DependsOnTargets="ExpandProjectReferences;ProjectReferenceClosure"
+          Returns="@(PackagesConfig)">
+
+    
+    <Message Text="--@(ProjectReferenceClosure, '%0a--')" />
+    <ItemGroup>
+      <!-- Prepare packages config for project files. -->
+      <_ProjectReferenceConfig Include="@(ProjectReferenceClosure)">
+        <SpecificForProject Condition=" '$(OS)' == 'Windows_NT'">%(ProjectReferenceClosure.RootDir)%(ProjectReferenceClosure.Directory)packages.$([System.String]::Copy('%(ProjectReferenceClosure.Filename)').Replace(' ','_')).config</SpecificForProject>
+        <SpecificForProject Condition=" '$(OS)' != 'Windows_NT'">%(ProjectReferenceClosure.RootDir)%(ProjectReferenceClosure.Directory)packages.%(ProjectReferenceClosure.Filename).config</SpecificForProject>
+        <DefaultInDirectory>%(ProjectReferenceClosure.RootDir)%(ProjectReferenceClosure.Directory)packages.config</DefaultInDirectory>
+      </_ProjectReferenceConfig>
+
+      <!-- Prepare existing packages config files. Project specific config files have precedence. -->
+      <PackagesConfig Include="@(_ProjectReferenceConfig->'%(SpecificForProject)')"
+                       Condition="Exists(%(_ProjectReferenceConfig.SpecificForProject))">
+        <MSBuildSourceProjectFile>%(_ProjectReferenceConfig.Identity)</MSBuildSourceProjectFile>
+      </PackagesConfig>
+      <PackagesConfig Include="@(_ProjectReferenceConfig->'%(DefaultInDirectory)')"
+                       Condition="Exists(%(_ProjectReferenceConfig.DefaultInDirectory)) And !Exists(%(_ProjectReferenceConfig.SpecificForProject))">
+        <MSBuildSourceProjectFile>%(_ProjectReferenceConfig.Identity)</MSBuildSourceProjectFile>
+      </PackagesConfig>
+    </ItemGroup>
+  </Target>
+
+  
+
+  <!--
+    ===================================================================================================================
     GetNuGetPackageDependencies
     ===================================================================================================================
 
-    Get the direct package dependencies that come from regular, i.e. non-.nuproj NuGet dependencies.
+    Get the closure of package dependencies that come from regular, i.e. non-.nuproj NuGet dependencies.
 
     OUTPUTS:
         @(NuGetDependency)               The NuGet dependencies of this package.
@@ -521,23 +569,13 @@
     =================================================================================================================== -->
 
   <Target Name="GetNuGetPackageDependencies"
+          DependsOnTargets="GetPackagesConfigFiles"
           Returns="@(NuGetDependency)">
-      <ItemGroup>
-          <_ProjectReferenceConfigs Include="@(ProjectReference)">
-              <SpecificForProject Condition=" '$(OS)' == 'Windows_NT'">%(ProjectReference.RootDir)%(ProjectReference.Directory)packages.$([System.String]::Copy('%(ProjectReference.Filename)').Replace(' ','_')).config</SpecificForProject>
-              <SpecificForProject Condition=" '$(OS)' != 'Windows_NT'">%(ProjectReference.RootDir)%(ProjectReference.Directory)packages.%(ProjectReference.Filename).config</SpecificForProject>
-              <DefaultInDirectory>%(ProjectReference.RootDir)%(ProjectReference.Directory)packages.config</DefaultInDirectory>
-          </_ProjectReferenceConfigs>
-          <_PackagesConfig Include="%(_ProjectReferenceConfigs.SpecificForProject)"
-                           Condition="Exists(%(_ProjectReferenceConfigs.SpecificForProject))"/>
-          <_PackagesConfig Include="%(_ProjectReferenceConfigs.DefaultInDirectory)"
-                           Condition="Exists(%(_ProjectReferenceConfigs.DefaultInDirectory)) And !Exists(%(_ProjectReferenceConfigs.SpecificForProject))"/>
-      </ItemGroup>
-    <ReadPackagesConfig PackagesConfigPath="%(_PackagesConfig.Identity)"
-                          Condition="'%(_PackagesConfig.Identity)' != ''">
-        <Output TaskParameter="Packages"
-                ItemName="NuGetDependency" />
-      </ReadPackagesConfig>
+    <ReadPackagesConfig PackagesConfigPath="%(PackagesConfig.Identity)"
+                        Condition="'%(PackagesConfig.Identity)' != ''">
+      <Output TaskParameter="Packages"
+              ItemName="NuGetDependency" />
+    </ReadPackagesConfig>
   </Target>
 
   <!-- 
