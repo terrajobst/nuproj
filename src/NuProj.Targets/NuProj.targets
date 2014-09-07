@@ -107,25 +107,114 @@
         </ItemGroup>
     </Target>
 
+
   <!--
     ===================================================================================================================
-    ExpandProjectReferences
+    GetNonNuprojProjectReferencesClosure
     ===================================================================================================================
 
-    This target will get the build outputs of the project references
+    This target will get closure of referenced NuProj projects.
+
+    INPUTS:
+        @(ProjectReference)            The project references
+
+    OUTPUTS:
+        @(_NonNuprojProjectReferencesClosure)  References closure of NuProj projects.
+
+    =================================================================================================================== -->
+
+  <Target Name="GetNuprojProjectReferencesClosure"
+          DependsOnTargets="SplitProjectReferences"
+          Returns="@(_NuprojProjectReferencesClosure)">
+
+    <MSBuild Targets="ProjectReferenceClosure"
+             Projects="%(_NuProjProjectReference.Identity)"
+             Properties="$(ProjectProperties)">
+      <Output TaskParameter="TargetOutputs"
+              ItemName="_NuprojProjectReferencesClosure" />
+    </MSBuild>
+  </Target>
+
+  <!--
+    ===================================================================================================================
+    GetNonNuprojProjectReferencesClosure
+    ===================================================================================================================
+
+    This target will get closure of referenced regular, i.e. non-NuProj projects.
+
+    INPUTS:
+        @(ProjectReference)            The project references
+
+    OUTPUTS:
+        @(_NonNuprojProjectReferencesClosure)  References closure of regular, i.e. non-NuProj projects.
+
+    =================================================================================================================== -->
+  
+  <Target Name="GetNonNuprojProjectReferencesClosure"
+          DependsOnTargets="SplitProjectReferences"
+          Returns="@(_NonNuprojProjectReferencesClosure)">
+
+    <MSBuild Targets="ProjectReferenceClosure"
+             Projects="%(_NonNuProjProjectReference.Identity)"
+             Properties="$(ProjectProperties)">
+      <Output TaskParameter="TargetOutputs"
+              ItemName="_NonNuprojProjectReferencesClosure" />
+    </MSBuild>
+  </Target>
+  
+  <!--
+    ===================================================================================================================
+    ExpandNuProjProjectReferences
+    ===================================================================================================================
+
+    This target will get the build outputs of regular, i.e. non-NuProj project references
 
     INPUTS:
         @(ProjectReference)         The project references
 
     OUTPUTS:
-        @(Library)                  The library items to be packaged
+        @(NuProjProjectReferenceOutput)                  The library items to be excluded from package
 
     =================================================================================================================== -->
 
-    <Target Name="ExpandProjectReferences"
+
+  <Target Name="ExpandNuProjProjectReferences"
+          DependsOnTargets="SplitProjectReferences">
+    
+    <!-- First let's make sure that the project reference has been fully build -->
+
+    <MSBuild Targets="Build"
+             Projects="%(_NuProjProjectReference.Identity)"
+             Properties="$(ProjectProperties)" />
+
+    <MSBuild Targets="ExpandNonNuProjProjectReferences"
+             Projects="%(_NuProjProjectReference.Identity)"
+             Properties="$(ProjectProperties)">
+      <Output TaskParameter="TargetOutputs"
+        ItemName="NuProjProjectReferenceOutput" />
+    </MSBuild>
+  </Target>
+
+  <!--
+    ===================================================================================================================
+    ExpandNonNuProjProjectReferences
+    ===================================================================================================================
+
+    This target will get the build outputs of NuProj project references
+
+    INPUTS:
+        @(ProjectReference)         The project references
+
+    OUTPUTS:
+        @(NonNuProjProjectReferenceOutput)                  The library items to be potentially packaged
+
+    =================================================================================================================== -->
+
+    <Target Name="ExpandNonNuProjProjectReferences"
             DependsOnTargets="SplitProjectReferences"
             Inputs="%(_NonNuProjProjectReference.Identity)"
-            Outputs="fake">
+            Outputs="fake"
+            Returns="@(NonNuProjProjectReferenceOutput)">
 
         <!-- First let's make sure that the project reference has been fully build -->
 
@@ -192,10 +281,52 @@
 
         <AssignTargetFramework OutputsWithTargetFrameworkInformation="@(_NonNuProjProjectOutputWithTargetFrameworkMoniker)">
             <Output TaskParameter="Libraries"
-                    ItemName="Library" />
+                    ItemName="NonNuProjProjectReferenceOutput" />
         </AssignTargetFramework>
 
     </Target>
+
+  <!--
+    ===================================================================================================================
+    GetLibraries
+    ===================================================================================================================
+
+    This item build Library items from non-NuProj project output, but excluding NuProj project outputs and NuGet 
+    dependencies.
+
+    INPUTS:
+        @(NonNuProjProjectReferenceOutput)                  Library items to be packaged
+        @(NuProjProjectReferenceOutput)                  Library items to be excluded
+        @(NuGetFileDependency)                  Library items to be excluded
+
+    OUTPUTS:
+        @(Library)                     The <File> elements to be packaged.
+
+    =================================================================================================================== -->
+  
+  <Target Name="GetLibraries"
+          DependsOnTargets="ExpandNonNuProjProjectReferences;ExpandNuProjProjectReferences;GetNuGetFileDependencies">
+
+    <ItemGroup>
+      <!--
+            We create a new item list where the identity is the simple file name
+            so that we can filter out the dependencies.
+        -->
+      <_LibraryToExclude Include="@(NuProjProjectReferenceOutput->'%(FileName)%(Extension)')">
+        <OriginalItemSpec>%(NuProjProjectReferenceOutput.Identity)</OriginalItemSpec>
+      </_LibraryToExclude>
+      <_LibraryToExclude Include="@(NuGetFileDependency->'%(FileName)%(Extension)')">
+        <OriginalItemSpec>%(NuGetFileDependency.Identity)</OriginalItemSpec>
+      </_LibraryToExclude>
+      <_LibraryToInclude Include="@(NonNuProjProjectReferenceOutput->'%(FileName)%(Extension)')">
+        <OriginalItemSpec>%(NonNuProjProjectReferenceOutput.Identity)</OriginalItemSpec>
+      </_LibraryToInclude>
+
+      <_Library Include="@(_LibraryToInclude)" Exclude="@(_LibraryToExclude)" />
+      
+      <Library Include="@(_Library->'%(OriginalItemSpec)')" />
+    </ItemGroup>
+  </Target>
 
     <!--
     ===================================================================================================================
@@ -215,7 +346,7 @@
     =================================================================================================================== -->
 
   <Target Name="ConvertItems"
-          DependsOnTargets="ExpandProjectReferences">
+          DependsOnTargets="GetLibraries">
     <CreateItem Include="@(Library)"
                 AdditionalMetadata="TargetPath=lib\%(Library.TargetFramework);Type=Library">
       <Output TaskParameter="Include"
@@ -357,95 +488,12 @@
 
   <Target Name="GetPackageFiles"
           Returns="@(PackageFile)"
-          DependsOnTargets="GetFiles;GetFileDependencies">
+          DependsOnTargets="ConvertItems">
 
-      <ItemGroup>
-        <!--
-            We create a new item list where the identity is the simple file name
-            so that we can filter out the dependencies.
-        -->
-        <_NonLibraryTargetPath Include="@(File->'%(FileName)%(Extension)')"
-                               Condition="'%(Type)' != 'Library'">
-            <OriginalItemSpec>%(File.Identity)</OriginalItemSpec>
-        </_NonLibraryTargetPath>
-        <_LibraryTargetPath Include="@(File->'%(FileName)%(Extension)')"
-                            Condition="'%(Type)' == 'Library'">
-            <OriginalItemSpec>%(File.Identity)</OriginalItemSpec>
-        </_LibraryTargetPath>
-        <!--
-            Now we can remove all files from _LibraryTargetPath that come from dependencies.
-        -->
-        <_FileDependencyTargetPath Include="@(FileDependency->'%(FileName)%(Extension)')" />
-        <_LibraryTargetPath Remove="@(_FileDependencyTargetPath)" />
-        <!--
-            In order to produce the final list we have to restore the original item spec.
-        -->
-        <PackageFile Remove="@(PackageFile)" />
-        <PackageFile Include="@(_NonLibraryTargetPath->'%(OriginalItemSpec)')" />
-        <PackageFile Include="@(_LibraryTargetPath->'%(OriginalItemSpec)')" />
-      </ItemGroup>
+    <ItemGroup>
+      <PackageFile Include="@(File)" />
+    </ItemGroup>
 
-  </Target>
-
-  <!--
-    ===================================================================================================================
-    GetFiles
-    ===================================================================================================================
-
-    Gets the set of candidate files to be packaged. This set will also contain any files that are already provided by
-    our NuGet dependencies.
-
-    OUTPUTS:
-        @(File)                        The files that are being packaged
-
-    =================================================================================================================== -->
-
-  <Target Name="GetFiles"
-          Returns="@(File)"
-          DependsOnTargets="ConvertItems" />
-
-  <!--
-    ===================================================================================================================
-    GetFileDependencies
-    ===================================================================================================================
-
-    Returns the files coming from the transitive closure of all NuGet dependencies from this package.
-
-    OUTPUTS:
-        @(FileDependency)               Files coming from dependencies
-
-    =================================================================================================================== -->
-
-  <Target Name="GetFileDependencies"
-          DependsOnTargets="GetNuProjFileDependencies;GetNuGetFileDependencies"
-          Returns="@(FileDependency)">
-      <ItemGroup>
-          <FileDependency Include="@(NuProjFileDependency)" />
-          <FileDependency Include="@(NuGetFileDependency)" />
-      </ItemGroup>
-  </Target>
-
-  <!--
-    ===================================================================================================================
-    GetNuProjFileDependencies
-    ===================================================================================================================
-
-    Returns the files coming from the transitive closure of all NuGet dependencies from this package.
-
-    OUTPUTS:
-        @(FileDependency)               Files coming from dependencies
-
-    =================================================================================================================== -->
-
-  <Target Name="GetNuProjFileDependencies"
-          Returns="@(NuProjFileDependency)"
-          DependsOnTargets="SplitProjectReferences">
-      <MSBuild Targets="GetPackageFiles"
-               Projects="@(_NuProjProjectReference)"
-               Properties="$(ProjectProperties)">
-        <Output TaskParameter="TargetOutputs"
-                ItemName="NuProjFileDependency" />
-      </MSBuild>
   </Target>
 
   <!--
@@ -521,7 +569,9 @@
     Get the packages configuration files that come from closure of regular, i.e. non-.nuproj NuGet dependencies.
 
     INPUTS:
-        @(ProjectReferenceClosure)      The closure of project references to be packaged
+        @(_NonNuprojProjectReferencesClosure)      The closure of non-NuProj project references to be packaged
+        @(_NuprojProjectReferencesClosure)      The closure of NuProj project references to be excluded from package
+        @(_NonNuprojProjectReferences)      The direct non-NuProj project references to be packaged
 
     OUTPUTS:
         @(PackagesConfig)               The NuGet dependencies of this package.
@@ -529,27 +579,26 @@
     =================================================================================================================== -->
   
   <Target Name="GetPackagesConfigFiles"
-          DependsOnTargets="ExpandProjectReferences;ProjectReferenceClosure"
+          DependsOnTargets="GetNuprojProjectReferencesClosure;GetNonNuprojProjectReferencesClosure;SplitProjectReferences"
           Returns="@(PackagesConfig)">
-
-    
-    <Message Text="--@(ProjectReferenceClosure, '%0a--')" />
     <ItemGroup>
+      <_DependencyProjectReference Include="@(_NonNuprojProjectReferencesClosure)" Exclude="@(_NuprojProjectReferencesClosure)" />
+      <!-- Ensure that non-nuproj references are always dependency. -->
+      <_DependencyProjectReference Include="@(_NonNuprojProjectReferences)" KeepDuplicates="false" />
+
       <!-- Prepare packages config for project files. -->
-      <_ProjectReferenceConfig Include="@(ProjectReferenceClosure)">
-        <SpecificForProject Condition=" '$(OS)' == 'Windows_NT'">%(ProjectReferenceClosure.RootDir)%(ProjectReferenceClosure.Directory)packages.$([System.String]::Copy('%(ProjectReferenceClosure.Filename)').Replace(' ','_')).config</SpecificForProject>
-        <SpecificForProject Condition=" '$(OS)' != 'Windows_NT'">%(ProjectReferenceClosure.RootDir)%(ProjectReferenceClosure.Directory)packages.%(ProjectReferenceClosure.Filename).config</SpecificForProject>
-        <DefaultInDirectory>%(ProjectReferenceClosure.RootDir)%(ProjectReferenceClosure.Directory)packages.config</DefaultInDirectory>
+      <_ProjectReferenceConfig Include="@(_DependencyProjectReference)">
+        <SpecificForProject Condition=" '$(OS)' == 'Windows_NT'">%(_DependencyProjectReference.RootDir)%(_DependencyProjectReference.Directory)packages.$([System.String]::Copy('%(_DependencyProjectReference.Filename)').Replace(' ','_')).config</SpecificForProject>
+        <SpecificForProject Condition=" '$(OS)' != 'Windows_NT'">%(_DependencyProjectReference.RootDir)%(_DependencyProjectReference.Directory)packages.%(_DependencyProjectReference.Filename).config</SpecificForProject>
+        <DefaultInDirectory>%(_DependencyProjectReference.RootDir)%(_DependencyProjectReference.Directory)packages.config</DefaultInDirectory>
       </_ProjectReferenceConfig>
 
       <!-- Prepare existing packages config files. Project specific config files have precedence. -->
       <PackagesConfig Include="@(_ProjectReferenceConfig->'%(SpecificForProject)')"
                        Condition="Exists(%(_ProjectReferenceConfig.SpecificForProject))">
-        <MSBuildSourceProjectFile>%(_ProjectReferenceConfig.Identity)</MSBuildSourceProjectFile>
       </PackagesConfig>
       <PackagesConfig Include="@(_ProjectReferenceConfig->'%(DefaultInDirectory)')"
                        Condition="Exists(%(_ProjectReferenceConfig.DefaultInDirectory)) And !Exists(%(_ProjectReferenceConfig.SpecificForProject))">
-        <MSBuildSourceProjectFile>%(_ProjectReferenceConfig.Identity)</MSBuildSourceProjectFile>
       </PackagesConfig>
     </ItemGroup>
   </Target>
@@ -569,7 +618,7 @@
     =================================================================================================================== -->
 
   <Target Name="GetNuGetPackageDependencies"
-          DependsOnTargets="GetPackagesConfigFiles"
+          DependsOnTargets="GetPackagesConfigFiles" 
           Returns="@(NuGetDependency)">
     <ReadPackagesConfig PackagesConfigPath="%(PackagesConfig.Identity)"
                         Condition="'%(PackagesConfig.Identity)' != ''">

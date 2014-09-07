@@ -16,6 +16,9 @@
         <File Source="$(var.NuProj.Tasks.TargetDir)Additional\NuProj.targets" />
       </Component>
       <Component>
+        <File Source="$(var.NuProj.Tasks.TargetDir)Additional\ProjectReferenceClosure.targets" />
+      </Component>
+      <Component>
         <File Source="$(var.NuProj.Tasks.TargetDir)Additional\NuProj.props" />
       </Component>
       <Component>

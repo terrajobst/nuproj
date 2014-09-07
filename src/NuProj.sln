@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30723.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuProj.Tasks", "NuProj.Tasks\NuProj.Tasks.csproj", "{187C3685-1EC7-4DCE-933B-8F7A43D5A481}"
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "NuProj.Setup", "NuProj.Setup\NuProj.Setup.wixproj", "{30DB7389-4D8A-4106-88FA-1079F2B08CD6}"
