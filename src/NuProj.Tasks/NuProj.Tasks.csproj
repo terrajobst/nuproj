@@ -71,6 +71,9 @@
       <Link>Additional\NuProj.props</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="..\NuProj.Targets\ProjectReferenceClosure.targets">
+      <Link>Additional\ProjectReferenceClosure.targets</Link>
+    </None>
     <None Include="..\NuProj.Templates\NuGetPackage.nuproj">
       <Link>Additional\NuGetPackage.nuproj</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
