@@ -492,6 +492,7 @@
     =================================================================================================================== -->
 
   <Target Name="GetNuGetFileDependencies"
+          DependsOnTargets="GetNuGetPackageDependencies"
           Returns="@(NuGetFileDependency)">
       <ItemGroup>
         <NuGetFileDependency Include="%(NuGetDependency.PackageDirectoryPath)\**\*"
@@ -516,7 +517,8 @@
           Returns="@(Dependency)">
     <ItemGroup>
       <Dependency Include="@(NuProjDependency)" />
-      <Dependency Include="@(NuGetDependency)" />
+      <Dependency Include="@(NuGetDependency)"
+                  Condition="'%(NuGetDependency.DependencyKind)' == 'Direct'" />
     </ItemGroup>
   </Target>
 
@@ -557,6 +559,7 @@
 
   <Target Name="GetNuGetPackageDependencies"
           Returns="@(NuGetDependency)"
+          Outputs="%(_OutputProjectFile.DependencyKind)"
           DependsOnTargets="GetProjectsFromOutputs">
       <ItemGroup>
           <_ProjectReferenceConfigs Include="@(_OutputProjectFile)">
@@ -572,8 +575,13 @@
       <ReadPackagesConfig PackagesConfigPath="%(_PackagesConfig.Identity)"
                           Condition="'%(_PackagesConfig.Identity)' != ''">
         <Output TaskParameter="Packages"
-                ItemName="NuGetDependency" />
+                ItemName="_NuGetDependency" />
       </ReadPackagesConfig>
+      <ItemGroup>
+        <NuGetDependency Include="@(_NuGetDependency)">
+          <DependencyKind>%(_OutputProjectFile.DependencyKind)</DependencyKind>
+        </NuGetDependency>
+      </ItemGroup>
   </Target>
 
   <!--
@@ -595,8 +603,12 @@
           Returns="@(_OutputProjectFile)"
           DependsOnTargets="ExpandProjectReferences">
       <ItemGroup>
-          <_OutputProjectFileWithDuplicates Include="@(Library->'%(MSBuildSourceProjectFile)')" />
-          <_OutputProjectFileWithDuplicates Include="%(ProjectReference.FullPath)" />
+          <_OutputProjectFileWithDuplicates Include="%(ProjectReference.FullPath)">
+            <DependencyKind>Direct</DependencyKind>
+          </_OutputProjectFileWithDuplicates>
+          <_OutputProjectFileWithDuplicates Include="@(Library->'%(MSBuildSourceProjectFile)')">
+            <DependencyKind>Indirect</DependencyKind>
+          </_OutputProjectFileWithDuplicates>
       </ItemGroup>
       <RemoveDuplicates Inputs="@(_OutputProjectFileWithDuplicates)">
         <Output TaskParameter="Filtered"
