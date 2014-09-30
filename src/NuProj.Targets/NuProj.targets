@@ -492,6 +492,7 @@
     =================================================================================================================== -->
 
   <Target Name="GetNuGetFileDependencies"
+          DependsOnTargets="GetNuGetPackageDependencies"
           Returns="@(NuGetFileDependency)">
       <ItemGroup>
         <NuGetFileDependency Include="%(NuGetDependency.PackageDirectoryPath)\**\*"
@@ -516,7 +517,8 @@
           Returns="@(Dependency)">
     <ItemGroup>
       <Dependency Include="@(NuProjDependency)" />
-      <Dependency Include="@(NuGetDependency)" />
+      <Dependency Include="@(NuGetDependency)"
+                  Condition="'%(NuGetDependency.DependencyKind)' == 'Direct'" />
     </ItemGroup>
   </Target>
 
@@ -556,12 +558,14 @@
     =================================================================================================================== -->
 
   <Target Name="GetNuGetPackageDependencies"
-          Returns="@(NuGetDependency)">
+          Returns="@(NuGetDependency)"
+          Outputs="%(_OutputProjectFile.DependencyKind)"
+          DependsOnTargets="GetProjectsFromOutputs">
       <ItemGroup>
-          <_ProjectReferenceConfigs Include="@(ProjectReference)">
-              <SpecificForProject Condition=" '$(OS)' == 'Windows_NT'">%(ProjectReference.RootDir)%(ProjectReference.Directory)packages.$([System.String]::Copy('%(ProjectReference.Filename)').Replace(' ','_')).config</SpecificForProject>
-              <SpecificForProject Condition=" '$(OS)' != 'Windows_NT'">%(ProjectReference.RootDir)%(ProjectReference.Directory)packages.%(ProjectReference.Filename).config</SpecificForProject>
-              <DefaultInDirectory>%(ProjectReference.RootDir)%(ProjectReference.Directory)packages.config</DefaultInDirectory>
+          <_ProjectReferenceConfigs Include="@(_OutputProjectFile)">
+              <SpecificForProject Condition=" '$(OS)' == 'Windows_NT'">%(_OutputProjectFile.RootDir)%(_OutputProjectFile.Directory)packages.$([System.String]::Copy('%(_OutputProjectFile.Filename)').Replace(' ','_')).config</SpecificForProject>
+              <SpecificForProject Condition=" '$(OS)' != 'Windows_NT'">%(_OutputProjectFile.RootDir)%(_OutputProjectFile.Directory)packages.%(_OutputProjectFile.Filename).config</SpecificForProject>
+              <DefaultInDirectory>%(_OutputProjectFile.RootDir)%(_OutputProjectFile.Directory)packages.config</DefaultInDirectory>
           </_ProjectReferenceConfigs>
           <_PackagesConfig Include="%(_ProjectReferenceConfigs.SpecificForProject)"
                            Condition="Exists(%(_ProjectReferenceConfigs.SpecificForProject))"/>
@@ -571,8 +575,45 @@
       <ReadPackagesConfig PackagesConfigPath="%(_PackagesConfig.Identity)"
                           Condition="'%(_PackagesConfig.Identity)' != ''">
         <Output TaskParameter="Packages"
-                ItemName="NuGetDependency" />
+                ItemName="_NuGetDependency" />
       </ReadPackagesConfig>
+      <ItemGroup>
+        <NuGetDependency Include="@(_NuGetDependency)">
+          <DependencyKind>%(_OutputProjectFile.DependencyKind)</DependencyKind>
+        </NuGetDependency>
+      </ItemGroup>
+  </Target>
+
+  <!--
+    ===================================================================================================================
+    GetProjectsFromOutputs
+    ===================================================================================================================
+
+    Gets the list of project files that contributed to the output. It could effectively be considered the closure
+    of all project referencs, but it only includes projects that added a file to the output. However, since we use
+    this list to only exclude files from the output for packaging, this works just fine.
+
+    OUTPUTS:
+        _OutputProjectFile               The list of project file paths that contributes to the output without
+                                         any duplicates.
+
+    =================================================================================================================== -->
+
+  <Target Name="GetProjectsFromOutputs"
+          Returns="@(_OutputProjectFile)"
+          DependsOnTargets="ExpandProjectReferences">
+      <ItemGroup>
+          <_OutputProjectFileWithDuplicates Include="%(ProjectReference.FullPath)">
+            <DependencyKind>Direct</DependencyKind>
+          </_OutputProjectFileWithDuplicates>
+          <_OutputProjectFileWithDuplicates Include="@(Library->'%(MSBuildSourceProjectFile)')">
+            <DependencyKind>Indirect</DependencyKind>
+          </_OutputProjectFileWithDuplicates>
+      </ItemGroup>
+      <RemoveDuplicates Inputs="@(_OutputProjectFileWithDuplicates)">
+        <Output TaskParameter="Filtered"
+                ItemName="_OutputProjectFile"/>
+      </RemoveDuplicates>
   </Target>
 
   <!--
