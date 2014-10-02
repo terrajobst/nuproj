@@ -8,52 +8,57 @@ using System.Xml.XPath;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
+using NuGet;
+
 namespace NuProj.Tasks
 {
     public class ReadPackagesConfig : Task
     {
         [Required]
-        public string PackagesConfigPath { get; set; }
+        public string ProjectPath { get; set; }
 
         [Output]
-        public ITaskItem[] Packages { get; set; }
+        public ITaskItem[] PackageReferences { get; set; }
 
         public override bool Execute()
         {
-            var document = XDocument.Load(PackagesConfigPath);
-            var packageElements = document.XPathSelectElements("/packages/package");
-            Packages = packageElements.Select(ConvertPackageElement).ToArray();
+            var packageReferenceFile = PackageReferenceFile.CreateFromProject(ProjectPath);
+            PackageReferences = packageReferenceFile.GetPackageReferences().Select(ConvertPackageElement).ToArray();
             return true;
         }
 
-        protected ITaskItem ConvertPackageElement(XElement element)
+        protected ITaskItem ConvertPackageElement(PackageReference packageReference)
         {
-            var idAttribute = element.Attribute("id");
-            var versionAttribute = element.Attribute("version");
-            var targetFrameworkAttribute = element.Attribute("targetFramework");
-            var developmentDependencyAttribute = element.Attribute("developmentDependency");
-
-            var id = idAttribute.Value;
-            var version = versionAttribute.Value;
-            var targetFramework = targetFrameworkAttribute == null ? null : targetFrameworkAttribute.Value;
-            var packageDirectoryPath = GetPackageDirectoryPath(PackagesConfigPath, id, version);
-            var developmentDependency = developmentDependencyAttribute == null ? null : developmentDependencyAttribute.Value;
+            var id = packageReference.Id;
+            var version = packageReference.Version;
+            var targetFramework = packageReference.TargetFramework;
+            var isDevelopmentDependency = packageReference.IsDevelopmentDependency;
+            var requireReinstallation = packageReference.RequireReinstallation;
+            var versionConstraint = packageReference.VersionConstraint;
 
             var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            metadata.Add("Version", version);
-            if (targetFramework != null)
-                metadata.Add("TargetFramework", targetFramework);
-            
-            if (developmentDependency != null)
-                metadata.Add("DevelopmentDependency", developmentDependency);
 
+            var packageDirectoryPath = GetPackageDirectoryPath(ProjectPath, id, version);
             metadata.Add("PackageDirectoryPath", packageDirectoryPath);
+            metadata.Add("ProjectPath", ProjectPath);
+
+            metadata.Add("IsDevelopmentDependency", isDevelopmentDependency.ToString());
+            metadata.Add("RequireReinstallation", requireReinstallation.ToString());
+
+            if (version != null)
+                metadata.Add("Version", version.ToString());
+
+            if (targetFramework != null)
+                metadata.Add("TargetFramework", VersionUtility.GetShortFrameworkName(targetFramework));
+
+            if (versionConstraint != null)
+                metadata.Add("VersionConstraint", versionConstraint.ToString());
 
             var item = new TaskItem(id, metadata);
             return item;
         }
 
-        private static string GetPackageDirectoryPath(string packagesConfigPath, string packageId, string packageVersion)
+        private static string GetPackageDirectoryPath(string packagesConfigPath, string packageId, SemanticVersion packageVersion)
         {
             var packageDirectoryName = packageId + "." + packageVersion;
             var candidateFolder = Path.GetDirectoryName(packagesConfigPath);

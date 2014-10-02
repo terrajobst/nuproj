@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Xml;
-using System.Xml.Linq;
-
+using System.Runtime.Versioning;
+using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using NuGet;
 
 namespace NuProj.Tasks
 {
@@ -82,8 +82,9 @@ namespace NuProj.Tasks
 
         private void WriteNuSpecFile()
         {
-            var document = CreateNuSpecDocument();
-            if (!IsDifferent(document))
+            var manifest = CreateManifest();
+
+            if (!IsDifferent(manifest))
             {
                 Log.LogMessage("Skipping generation of .nuspec because contents are identical.");
                 return;
@@ -91,179 +92,209 @@ namespace NuProj.Tasks
 
             var directory = Path.GetDirectoryName(OutputFileName);
             if (!Directory.Exists(directory))
+            {
                 Directory.CreateDirectory(directory);
+            }
 
-            document.Save(OutputFileName);
+            using (var file = File.OpenWrite(OutputFileName))
+            {
+                manifest.Save(file, false);
+            }
         }
 
-        private bool IsDifferent(XDocument newDocument)
+        private bool IsDifferent(Manifest newManifest)
         {
             if (!File.Exists(OutputFileName))
                 return true;
 
-            var oldSource = XDocument.Load(OutputFileName).ToString();
-            var newSource = newDocument.ToString();
+            var oldSource = File.ReadAllText(OutputFileName);
+            var newSource = "";
+            using (var stream = new MemoryStream())
+            {
+                newManifest.Save(stream);
+                stream.Seek(0, SeekOrigin.Begin);
+                newSource = Encoding.UTF8.GetString(stream.ToArray());
+            }
+
             return oldSource != newSource;
         }
 
-        private XDocument CreateNuSpecDocument()
+        private Manifest CreateManifest()
         {
-            var element = CreatePackageElement();
-            return new XDocument(element);
+            var manifestMetadata = new ManifestMetadata();
+            manifestMetadata.Authors = Authors;
+            manifestMetadata.Copyright = Copyright;
+            manifestMetadata.DependencySets = GetDependencySets();
+            manifestMetadata.Description = Description;
+            manifestMetadata.DevelopmentDependency = DevelopmentDependency;
+            manifestMetadata.FrameworkAssemblies = GetFrameworkAssemblies();
+            manifestMetadata.IconUrl = IconUrl;
+            manifestMetadata.Id = Id;
+            manifestMetadata.Language = Language;
+            manifestMetadata.LicenseUrl = LicenseUrl;
+            manifestMetadata.MinClientVersionString = MinClientVersion;
+            manifestMetadata.Owners = Owners;
+            manifestMetadata.ProjectUrl = ProjectUrl;
+            manifestMetadata.ReferenceSets = GetReferenceSets();
+            manifestMetadata.ReleaseNotes = ReleaseNotes;
+            manifestMetadata.RequireLicenseAcceptance = RequireLicenseAcceptance;
+            manifestMetadata.Summary = Summary;
+            manifestMetadata.Tags = Tags;
+            manifestMetadata.Title = Title;
+            manifestMetadata.Version = Version;
+
+            var manifest = new Manifest()
+            {
+                Metadata = manifestMetadata,
+                Files = GetManifestFiles()
+            };
+
+            return manifest;
         }
 
-        private XElement CreatePackageElement()
+        private List<ManifestFile> GetManifestFiles()
         {
-            var metadata = CreateMetadataElement();
-            var files = CreateFilesElement();
-            return new XElement(XName.Get("package", NuSpecXmlNamespace), metadata, files);
+            return (from f in Files.NullAsEmpty()
+                    select new ManifestFile
+                    {
+                        Source = f.GetMetadata("FullPath"),
+                        Target = f.GetMetadata("TargetPath"),
+                        Exclude = f.GetMetadata("Exclude"),
+                    }).ToList();
         }
 
-        private XElement CreateMetadataElement()
+        private List<ManifestFrameworkAssembly> GetFrameworkAssemblies()
         {
-            var minClientVersionAttribute = GetMinClientVersionAttribute();
-            var simpleElements = GetSimpleMetadataElements();
-            var dependency = GetDependenciesElement();
-            var references = GetReferencesElement();
-            var frameworkReference = GetFrameworkReferencesElement();
-            return new XElement(XName.Get("metadata", NuSpecXmlNamespace), minClientVersionAttribute, simpleElements, dependency, references, frameworkReference);
+            return (from fr in FrameworkReferences.NullAsEmpty()
+                    select new ManifestFrameworkAssembly
+                    {
+                        AssemblyName = fr.ItemSpec,
+                        TargetFramework = fr.GetTargetFramework().GetShortFrameworkName(),
+                    }).ToList();
         }
 
-        private XAttribute GetMinClientVersionAttribute()
+        private List<ManifestDependencySet> GetDependencySets()
         {
-            return string.IsNullOrEmpty(MinClientVersion)
-                     ? null
-                     : new XAttribute("minClientVersion", MinClientVersion);
-        }
+            var dependencies = from d in Dependencies.NullAsEmpty()
+                               select new Dependency
+                               {
+                                   Id = d.ItemSpec,
+                                   Version = d.GetVersion(),
+                                   TargetFramework = d.GetTargetFramework()
+                               };
 
-        private IEnumerable<XElement> GetSimpleMetadataElements()
-        {
-            yield return GetMetadataElement("id", Id);
-            yield return GetMetadataElement("version", Version);
-            yield return GetMetadataElement("title", Title);
-            yield return GetMetadataElement("authors", Authors);
-            yield return GetMetadataElement("owners", Owners);
-            yield return GetMetadataElement("description", Description);
-            yield return GetMetadataElement("releaseNotes", ReleaseNotes);
-            yield return GetMetadataElement("summary", Summary);
-            yield return GetMetadataElement("language", Language);
-            yield return GetMetadataElement("projectUrl", ProjectUrl);
-            yield return GetMetadataElement("iconUrl", IconUrl);
-            yield return GetMetadataElement("licenseUrl", LicenseUrl);
-            yield return GetMetadataElement("copyright", Copyright);
-            yield return GetMetadataElement("requireLicenseAcceptance", RequireLicenseAcceptance);
-            yield return GetMetadataElement("tags", Tags);
-            yield return GetMetadataElement("developmentDependency", DevelopmentDependency);
-        }
-
-        private static XElement GetMetadataElement(string name, string value)
-        {
-            if (string.IsNullOrEmpty(value))
-                return null;
-
-            var qualifiedName = XName.Get(name, NuSpecXmlNamespace);
-            return new XElement(qualifiedName, value);
-        }
-
-        private static XElement GetMetadataElement(string name, bool value)
-        {
-            return GetMetadataElement(name, XmlConvert.ToString(value));
-        }
-
-        private XElement GetDependenciesElement()
-        {
-            if (Dependencies == null || Dependencies.Length == 0)
-                return null;
-
-            var dependencies = from d in Dependencies
-                               select new
-                                          {
-                                              Id = d.ItemSpec,
-                                              Version = d.GetMetadata("Version"),
-                                              TargetFramework = d.GetMetadata("TargetFramework"),
-                                              DevelopmentDependency = d.GetMetadata("DevelopmentDependency")
-                                          };
-            
-            var nonDevelopmentDependencies = dependencies.Where(x => x.DevelopmentDependency != "true");
-
-            var dependenciesGroupedByTargetFramework = nonDevelopmentDependencies.GroupBy(d => d.TargetFramework);
-
-            var elements = from g in dependenciesGroupedByTargetFramework
-                           let d = from d in g
-                                   let idAttribute = new XAttribute("id", d.Id)
-                                   let versionAttribute = string.IsNullOrEmpty(d.Id)
-                                                              ? null
-                                                              : new XAttribute("version", d.Version)
-                                   select new XElement(XName.Get("dependency", NuSpecXmlNamespace), idAttribute, versionAttribute)
-                           let targetFramework = g.Key
-                           let targetFrameworkAttribute = string.IsNullOrEmpty(targetFramework)
-                                                               ? null
-                                                               : new XAttribute("targetFramework", targetFramework)
-                           select new XElement(XName.Get("group", NuSpecXmlNamespace), targetFrameworkAttribute, d);
-
-            return new XElement(XName.Get("dependencies", NuSpecXmlNamespace), elements);
-        }
-
-        private XElement GetReferencesElement()
-        {
-            if (References == null || References.Length == 0)
-                return null;
-
-            var references = from r in References
-                             select new
+            return (from dependency in dependencies
+                    group dependency by dependency.TargetFramework into dependenciesByFramework
+                    select new ManifestDependencySet
+                    {
+                        TargetFramework = dependenciesByFramework.Key.GetShortFrameworkName(),
+                        Dependencies = (from dependency in dependenciesByFramework
+                                        group dependency by dependency.Id into dependenciesById
+                                        select new ManifestDependency
                                         {
-                                            File = r.ItemSpec,
-                                        };
-
-            var elements = from r in references
-                           let fileAttribute = new XAttribute("file", r.File)
-                           select new XElement(XName.Get("reference", NuSpecXmlNamespace), fileAttribute);
-
-            return new XElement(XName.Get("references", NuSpecXmlNamespace), elements);
+                                            Id = dependenciesById.Key,
+                                            Version = dependenciesById.Select(x => x.Version)
+                                                .Aggregate(AggregateVersions)
+                                                .ToStringSafe()
+                                        }).ToList()
+                    }).ToList();
         }
 
-        private XElement GetFrameworkReferencesElement()
+        private List<ManifestReferenceSet> GetReferenceSets()
         {
-            if (FrameworkReferences == null || FrameworkReferences.Length == 0)
-                return null;
-
-            var references = from r in FrameworkReferences
+            var references = from r in References.NullAsEmpty()
                              select new
                              {
-                                 AssemblyName = r.ItemSpec,
-                                 TargetFramework = r.GetMetadata("TargetFramework")
+                                 File = r.ItemSpec,
+                                 TargetFramework = r.GetTargetFramework(),
                              };
 
-            var elements = from r in references
-                           let assemblyNameAttribute = new XAttribute("assemblyName", r.AssemblyName)
-                           let targetFrameworkAttribute = string.IsNullOrEmpty(r.TargetFramework)
-                                                              ? null
-                                                              : new XAttribute("targetFramework", r.TargetFramework)
-                           select new XElement(XName.Get("frameworkAssembly", NuSpecXmlNamespace), assemblyNameAttribute, targetFrameworkAttribute);
-
-            return new XElement(XName.Get("frameworkAssemblies", NuSpecXmlNamespace), elements);
+            return (from reference in references
+                    group reference by reference.TargetFramework into referencesByFramework
+                    select new ManifestReferenceSet
+                    {
+                        TargetFramework = referencesByFramework.Key.GetShortFrameworkName(),
+                        References = (from reference in referencesByFramework
+                                      select new ManifestReference
+                                      {
+                                          File = reference.File
+                                      }).ToList()
+                    }).ToList();
         }
 
-        private XElement CreateFilesElement()
+        private static IVersionSpec AggregateVersions(IVersionSpec aggregate, IVersionSpec next)
         {
-            if (Files == null || Files.Length == 0)
-                return null;
+            var versionSpec = new VersionSpec();
+            SetMinVersion(versionSpec, aggregate);
+            SetMinVersion(versionSpec, next);
+            SetMaxVersion(versionSpec, aggregate);
+            SetMaxVersion(versionSpec, next);
 
-            var files = from f in Files
-                        select new
-                                   {
-                                       Include = f.GetMetadata("FullPath"),
-                                       TargetPath = f.GetMetadata("TargetPath")
-                                   };
+            if (versionSpec.MinVersion == null && versionSpec.MaxVersion == null)
+            {
+                versionSpec = null;
+            }
 
-            var elements = from f in files
-                           let srcAttribute = new XAttribute("src", f.Include)
-                           let targetPathAttribute = string.IsNullOrEmpty(f.TargetPath)
-                                                         ? null
-                                                         : new XAttribute("target", f.TargetPath)
-                           select new XElement(XName.Get("file", NuSpecXmlNamespace), srcAttribute, targetPathAttribute);
+            return versionSpec;
+        }
 
-            return new XElement(XName.Get("files", NuSpecXmlNamespace), elements);
+        private static void SetMinVersion(VersionSpec target, IVersionSpec source)
+        {
+            if (source == null || source.MinVersion == null)
+            {
+                return;
+            }
+
+            if (target.MinVersion == null)
+            {
+                target.MinVersion = source.MinVersion;
+                target.IsMinInclusive = source.IsMinInclusive;
+            }
+
+            if (target.MinVersion < source.MinVersion)
+            {
+                target.MinVersion = source.MinVersion;
+                target.IsMinInclusive = source.IsMinInclusive;
+            }
+
+            if (target.MinVersion == source.MinVersion)
+            {
+                target.IsMinInclusive = target.IsMinInclusive && source.IsMinInclusive;
+            }
+        }
+
+        private static void SetMaxVersion(VersionSpec target, IVersionSpec source)
+        {
+            if (source == null || source.MaxVersion == null)
+            {
+                return;
+            }
+
+            if (target.MaxVersion == null)
+            {
+                target.MaxVersion = source.MaxVersion;
+                target.IsMaxInclusive = source.IsMaxInclusive;
+            }
+
+            if (target.MaxVersion > source.MaxVersion)
+            {
+                target.MaxVersion = source.MaxVersion;
+                target.IsMaxInclusive = source.IsMaxInclusive;
+            }
+
+            if (target.MaxVersion == source.MaxVersion)
+            {
+                target.IsMaxInclusive = target.IsMaxInclusive && source.IsMaxInclusive;
+            }
+        }
+
+        private class Dependency
+        {
+            public string Id { get; set; }
+
+            public FrameworkName TargetFramework { get; set; }
+
+            public IVersionSpec Version { get; set; }
         }
     }
 }

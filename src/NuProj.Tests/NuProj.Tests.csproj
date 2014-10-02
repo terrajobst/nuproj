@@ -75,12 +75,14 @@
     <Compile Include="Infrastructure\Assets.cs" />
     <Compile Include="BasicTests.cs" />
     <Compile Include="Infrastructure\Scenario.cs" />
+    <Compile Include="Infrastructure\AssertTaskItem.cs" />
     <Compile Include="PackageIdentityTests.cs" />
     <Compile Include="Infrastructure\MSBuild.cs" />
     <Compile Include="Infrastructure\NuGetHelper.cs" />
     <Compile Include="Infrastructure\NuPkg.cs" />
     <Compile Include="Infrastructure\ProjectBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReadPackagesConfigTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Infrastructure\Assets\FromTemplate.nuproj" />

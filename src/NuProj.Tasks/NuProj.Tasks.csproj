@@ -44,6 +44,7 @@
       <HintPath>..\packages\Nuget.Core.2.8.2\lib\net40-Client\NuGet.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -58,6 +59,7 @@
     <Compile Include="AssignTargetFramework.cs" />
     <Compile Include="GenerateNuSpec.cs" />
     <Compile Include="AssignSourceTargetPaths.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="NuGetPack.cs" />
     <Compile Include="ReadPackagesConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -557,22 +557,19 @@
 
   <Target Name="GetNuGetPackageDependencies"
           Returns="@(NuGetDependency)">
-      <ItemGroup>
-          <_ProjectReferenceConfigs Include="@(ProjectReference)">
-              <SpecificForProject Condition=" '$(OS)' == 'Windows_NT'">%(ProjectReference.RootDir)%(ProjectReference.Directory)packages.$([System.String]::Copy('%(ProjectReference.Filename)').Replace(' ','_')).config</SpecificForProject>
-              <SpecificForProject Condition=" '$(OS)' != 'Windows_NT'">%(ProjectReference.RootDir)%(ProjectReference.Directory)packages.%(ProjectReference.Filename).config</SpecificForProject>
-              <DefaultInDirectory>%(ProjectReference.RootDir)%(ProjectReference.Directory)packages.config</DefaultInDirectory>
-          </_ProjectReferenceConfigs>
-          <_PackagesConfig Include="%(_ProjectReferenceConfigs.SpecificForProject)"
-                           Condition="Exists(%(_ProjectReferenceConfigs.SpecificForProject))"/>
-          <_PackagesConfig Include="%(_ProjectReferenceConfigs.DefaultInDirectory)"
-                           Condition="Exists(%(_ProjectReferenceConfigs.DefaultInDirectory)) And !Exists(%(_ProjectReferenceConfigs.SpecificForProject))"/>
-      </ItemGroup>
-      <ReadPackagesConfig PackagesConfigPath="%(_PackagesConfig.Identity)"
-                          Condition="'%(_PackagesConfig.Identity)' != ''">
-        <Output TaskParameter="Packages"
-                ItemName="NuGetDependency" />
+      <ReadPackagesConfig ProjectPath="%(ProjectReference.FullPath)"
+                          Condition="'%(ProjectReference.FullPath)' != ''">
+        <Output TaskParameter="PackageReferences"
+                ItemName="_PackageReference" />
       </ReadPackagesConfig>
+
+      <ItemGroup Condition="'@(_PackageReference)' != ''">
+        <NuGetDependency Include="@(_PackageReference)" 
+                         Condition="!%(IsDevelopmentDependency)"
+                         RemoveMetadata="IsDevelopmentDependency;RequireReinstallation;VersionConstraint">
+          <Version Condition="'%(_PackageReference.VersionConstraint)' != ''">%(_PackageReference.VersionConstraint)</Version>
+        </NuGetDependency>
+      </ItemGroup>
   </Target>
 
   <!--

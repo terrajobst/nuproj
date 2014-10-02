@@ -2,9 +2,8 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-
+using NuGet;
 using NuProj.Tests.Infrastructure;
-
 using Xunit;
 
 namespace NuProj.Tests
@@ -48,6 +47,23 @@ namespace NuProj.Tests
 
             Assert.None(files, x => x.Path.Contains("Newtonsoft.Json.dll"));
             Assert.None(files, x => x.Path.Contains("ServiceModel.Composition.dll"));
+        }
+
+        [Fact]
+        public async Task Dependency_Versions_AreAggregated()
+        {
+            var package = await Scenario.RestoreAndBuildSinglePackage("Dependency_Versions_AreAggregated");
+            var expectedVersions = new[]
+            {
+                    "1.1.20-beta",
+                    "1.0.12-alpha",
+                    "[0.2, 1.0]",
+                    "[0.2, 1.0]",
+            };
+            var versionSpecs = package.DependencySets
+                .SelectMany(x => x.Dependencies)
+                .Select(x => x.VersionSpec.ToString());
+            Assert.Equal(expectedVersions, versionSpecs);
         }
     }
 }
