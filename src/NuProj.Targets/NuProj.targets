@@ -259,7 +259,39 @@
       <File Remove="@(File)" />
       <File Include="@(_FileWithIsLibrary)" />
     </ItemGroup>
+  </Target>
 
+  <!--
+    ===================================================================================================================
+    FilterPackageFiles
+    ===================================================================================================================
+
+    This target will remove duplicate package files based on target location within the package.
+
+    INPUTS:
+        @(PackageFile)              Files to be packaged with possible duplicates.
+
+    OUTPUTS:
+        @(FilteredPackageFile)      Unique files to be packaged.
+
+    =================================================================================================================== -->
+  <Target Name="FilterPackageFiles"
+          DependsOnTargets="GetPackageFiles;GetSourceFiles"
+          Returns="@(FilteredPackageFile)">
+    <ItemGroup>
+      <_PackageFileTarget Include="@(PackageFile->'%(TargetPath)\%(FileName)%(Extension)')">
+        <OriginalItemSpec>%(PackageFile.Identity)</OriginalItemSpec>
+      </_PackageFileTarget>
+    </ItemGroup>
+    
+    <RemoveDuplicates Inputs="@(_PackageFileTarget)">
+      <Output TaskParameter="Filtered"
+              ItemName="_FilteredPackageFileTarget" />
+    </RemoveDuplicates>
+
+    <ItemGroup>
+      <FilteredPackageFile Include="@(_FilteredPackageFileTarget->'%(OriginalItemSpec)')" />
+    </ItemGroup>
   </Target>
 
   <!--
@@ -292,14 +324,14 @@
         @(Dependency)                  (Optional) The NuGet package dependencies
         @(FrameworkReference)          (Optional) Framework assembly references
         @(Reference)                   (Optional) The assembly references
-        @(File)                        (Optional) The files to be packaged
+        @(FilteredPackageFile)         (Optional) The files to be packaged
 
     =================================================================================================================== -->
 
   <Target Name="GenerateNuSpec"
-          Inputs="@(PackageFile);AlwaysRunEvenIfPackageFileIsEmpty"
+          Inputs="@(FilteredPackageFile);AlwaysRunEvenIfPackageFileIsEmpty"
           Outputs="$(NuSpecPath)"
-          DependsOnTargets="GetPackageDependencies;GetPackageFiles;GetSourceFiles">
+          DependsOnTargets="GetPackageDependencies;FilterPackageFiles">
     <!-- Please Note:
          In order to avoid incremental build issues this target will always run.
          However, the task will make sure that it doesn't touch the file if the
@@ -326,7 +358,7 @@
                     Dependencies="@(Dependency)"
                     References="@(Reference)"
                     FrameworkReferences="@(FrameworkReference)"
-                    Files="@(PackageFile)"/>
+                    Files="@(FilteredPackageFile)"/>
   </Target>
 
   <!--
