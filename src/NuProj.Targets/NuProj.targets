@@ -127,8 +127,17 @@
 
     <Target Name="_NuProjGetProjectClosure"
             Returns="@(_ProjectReferenceClosure)">
+      
+      <!-- First let's make sure that the project references have been fully build,
+             unless building project references is disabled. -->
 
-        <!-- Get closure of indirect references -->
+      <MSBuild Targets="Build"
+               Condition="'$(BuildProjectReferences)' == 'true'"
+               Projects="@(ProjectReference)"
+               Properties="$(ProjectProperties)"
+               ContinueOnError="WarnAndContinue"/>
+
+      <!-- Get closure of indirect references -->
         <MSBuild Projects="@(ProjectReference)"
                  Targets="_NuProjGetProjectClosure"
                  Properties="$(ProjectProperties)"
@@ -215,15 +224,8 @@
             Inputs="%(_NonNuProjProjectReference.Identity)"
             Outputs="fake">
 
-        <!-- First let's make sure that the project references have been fully build,
-             unless building project references is disabled. -->
 
-        <MSBuild Targets="Build"
-                 Condition="'$(BuildProjectReferences)' == 'true'"
-                 Projects="%(_NonNuProjProjectReference.Identity)"
-                 Properties="$(ProjectProperties)" />
-
-        <!-- Now we can ask for the output and all dependencies. -->
+        <!-- Ask for the output and all dependencies. -->
 
         <MSBuild Targets="$(ProjectOutputGroups)"
                  Projects="%(_NonNuProjProjectReference.Identity)"
@@ -596,6 +598,7 @@
     =================================================================================================================== -->
 
   <Target Name="GetNuGetFileDependencies"
+          DependsOnTargets="GetNuGetPackageDependencies"
           Returns="@(NuGetFileDependency)">
       <ItemGroup>
         <NuGetFileDependency Include="%(NuGetDependency.PackageDirectoryPath)\**\*"

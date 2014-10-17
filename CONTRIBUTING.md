@@ -132,5 +132,5 @@ namespace NuProj.More.AndMore
 
   </Target>
 
-</Project
+</Project>
 ```
