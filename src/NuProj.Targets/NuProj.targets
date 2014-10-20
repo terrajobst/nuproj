@@ -137,7 +137,7 @@
                Properties="$(ProjectProperties)"
                ContinueOnError="WarnAndContinue"/>
 
-      <!-- Get closure of indirect references -->
+        <!-- Get closure of indirect references -->
         <MSBuild Projects="@(ProjectReference)"
                  Targets="_NuProjGetProjectClosure"
                  Properties="$(ProjectProperties)"
@@ -522,6 +522,13 @@
 
       </ItemGroup>
 
+      <ItemGroup>
+        <PackageFile Condition="'%(PackageFile.NuProjPackageId)' == ''">
+          <NuProjPackageId>$(Id)</NuProjPackageId>
+          <NuProjPackageVersion>$(Version)</NuProjPackageVersion>
+        </PackageFile>
+      </ItemGroup>
+
   </Target>
 
   <!--
@@ -607,6 +614,49 @@
   </Target>
 
   <!--
+  ===================================================================================================================
+  AssignNuProjPackageDependenciesTargetFramework
+  ===================================================================================================================
+
+  Assigns "TargetFramework" metadata to dependencies coming from NuProj projects based on referenced files that can be 
+  removed from package.
+
+  INPUTS:
+      @(NuGetFileDependency)               Files coming from dependencies
+
+  OUTPUTS:
+      @(NuGetFileDependency)               Files coming from dependencies with target framework
+
+  =================================================================================================================== -->
+  
+  <Target Name="AssignNuProjPackageDependenciesTargetFramework"
+          Inputs="@(NuProjDependency)"
+          Outputs="%(NuProjDependency.Identity)"
+          DependsOnTargets="GetNuProjPackageDependencies;GetFiles">
+
+    <ItemGroup>
+      <!-- Clear temporary items. -->
+      <_NuProjDependency Remove="@(_NuProjDependency)" />
+      <_DependencyFile Remove="@(_DependencyFile)" />
+      
+      <!-- Get files that are library and have assigned target framework (so no debug symbols files). -->
+      <_DependencyFile Include="@(File)" 
+                       Condition="'%(File.IsLibrary)' == 'True' 
+                         and '%(File.TargetFramework)' != '' 
+                         and '%(File.NuProjPackageId)' == '%(NuProjDependency.Identity)'"/>
+      
+      <_NuProjDependency Include="@(NuProjDependency)">
+        <TargetFramework>%(_DependencyFile.TargetFramework)</TargetFramework>
+      </_NuProjDependency>
+      
+      <!-- Replace dependency item with ones that have target framework. -->
+      <NuProjDependency Remove="@(_NuProjDependency)" />
+      <NuProjDependency Include="@(_NuProjDependency)" />
+    </ItemGroup>
+
+  </Target>
+
+  <!--
     ===================================================================================================================
     GetPackageDependencies
     ===================================================================================================================
@@ -619,7 +669,7 @@
     =================================================================================================================== -->
 
   <Target Name="GetPackageDependencies"
-          DependsOnTargets="GetNuProjPackageDependencies;GetNuGetPackageDependencies"
+          DependsOnTargets="AssignNuProjPackageDependenciesTargetFramework;GetNuGetPackageDependencies"
           Returns="@(Dependency)">
     <ItemGroup>
       <Dependency Include="@(NuProjDependency)"

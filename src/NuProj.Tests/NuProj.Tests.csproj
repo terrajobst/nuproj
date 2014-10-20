@@ -75,6 +75,8 @@
     <Compile Include="Infrastructure\AssertNu.cs" />
     <Compile Include="Infrastructure\Assets.cs" />
     <Compile Include="BasicTests.cs" />
+    <Compile Include="Infrastructure\PackageDependencyComparer.cs" />
+    <Compile Include="Infrastructure\PackageDependencySetComparer.cs" />
     <Compile Include="Infrastructure\Scenario.cs" />
     <Compile Include="Infrastructure\AssertTaskItem.cs" />
     <Compile Include="PackageIdentityTests.cs" />
