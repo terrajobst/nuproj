@@ -522,6 +522,13 @@
 
       </ItemGroup>
 
+      <ItemGroup>
+        <PackageFile Condition="'%(PackageFile.NuProjPackageId)' == ''">
+          <NuProjPackageId>$(Id)</NuProjPackageId>
+          <NuProjPackageVersion>$(Version)</NuProjPackageVersion>
+        </PackageFile>
+      </ItemGroup>
+
   </Target>
 
   <!--
@@ -607,6 +614,39 @@
   </Target>
 
   <!--
+  ===================================================================================================================
+  AssignNuProjPackageDependenciesTargetFramework
+  ===================================================================================================================
+
+  Assigns "TargetFramewor"k metadata to dependencies coming from NuProj projects bases on files that can be removed
+  from package.
+
+  INPUTS:
+      @(NuGetFileDependency)               Files coming from dependencies
+
+  OUTPUTS:
+      @(NuGetFileDependency)               Files coming from dependencies with target framework
+
+  =================================================================================================================== -->
+  
+  <Target Name="AssignNuProjPackageDependenciesTargetFramework"
+          Inputs="@(NuProjDependency)"
+          Outputs="%(NuProjDependency.Identity)"
+          DependsOnTargets="GetNuProjPackageDependencies;GetFiles">
+
+    <ItemGroup>
+      <_DependencyFile Remove="@(_DependencyFile)" />
+      <_DependencyFile Include="@(File)" Condition="'%(File.IsLibrary)' == 'True' and '%(File.NuProjPackageId)' == '%(NuProjDependency.Identity)'"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <NuProjDependency>
+        <TargetFramework>%(_DependencyFile.TargetFramework)</TargetFramework>
+      </NuProjDependency>
+    </ItemGroup>
+  </Target>
+
+  <!--
     ===================================================================================================================
     GetPackageDependencies
     ===================================================================================================================
@@ -619,7 +659,7 @@
     =================================================================================================================== -->
 
   <Target Name="GetPackageDependencies"
-          DependsOnTargets="GetNuProjPackageDependencies;GetNuGetPackageDependencies"
+          DependsOnTargets="AssignNuProjPackageDependenciesTargetFramework;GetNuGetPackageDependencies"
           Returns="@(Dependency)">
     <ItemGroup>
       <Dependency Include="@(NuProjDependency)"
