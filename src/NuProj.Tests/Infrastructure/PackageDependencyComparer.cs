@@ -6,15 +6,15 @@ namespace NuProj.Tests.Infrastructure
 {
     public class PackageDependencyComparer : IEqualityComparer<PackageDependency>
     {
-        private StringComparer _stringComparer;
+        private static readonly StringComparer _stringComparer = StringComparer.OrdinalIgnoreCase;
+        private static readonly PackageDependencyComparer _instance = new PackageDependencyComparer();
 
-        public PackageDependencyComparer(StringComparer stringComparer)
+        public static PackageDependencyComparer Instance
         {
-            if (stringComparer == null)
+            get
             {
-                throw new ArgumentNullException("stringComparer");
+                return _instance;
             }
-            _stringComparer = stringComparer;
         }
 
         public bool Equals(PackageDependency x, PackageDependency y)

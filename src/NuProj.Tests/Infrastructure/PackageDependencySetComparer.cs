@@ -7,19 +7,8 @@ namespace NuProj.Tests.Infrastructure
 {
     public class PackageDependencySetComparer : IEqualityComparer<PackageDependencySet>
     {
-        private static PackageDependencySetComparer _instance = new PackageDependencySetComparer(StringComparer.OrdinalIgnoreCase);
-        private PackageDependencyComparer _packageDependencyComparer;
-        private StringComparer _stringComparer;
-
-        public PackageDependencySetComparer(StringComparer stringComparer)
-        {
-            if (stringComparer == null)
-            {
-                throw new ArgumentNullException("stringComparer");
-            }
-            _stringComparer = stringComparer;
-            _packageDependencyComparer = new PackageDependencyComparer(stringComparer);
-        }
+        private static readonly StringComparer _stringComparer = StringComparer.OrdinalIgnoreCase;
+        private static readonly PackageDependencySetComparer _instance = new PackageDependencySetComparer();
 
         public static PackageDependencySetComparer Instance
         {
@@ -43,11 +32,11 @@ namespace NuProj.Tests.Infrastructure
 
             var xDependencies = new HashSet<PackageDependency>(
                 x.Dependencies ?? Enumerable.Empty<PackageDependency>(),
-                _packageDependencyComparer);
+                PackageDependencyComparer.Instance);
 
             var yDependencies = new HashSet<PackageDependency>(
                 y.Dependencies ?? Enumerable.Empty<PackageDependency>(),
-                _packageDependencyComparer);
+                PackageDependencyComparer.Instance);
 
             return x.TargetFramework == y.TargetFramework
                 && xDependencies.SetEquals(yDependencies);
