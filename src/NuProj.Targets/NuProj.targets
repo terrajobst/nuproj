@@ -127,8 +127,17 @@
 
     <Target Name="_NuProjGetProjectClosure"
             Returns="@(_ProjectReferenceClosure)">
+      
+      <!-- First let's make sure that the project references have been fully build,
+             unless building project references is disabled. -->
 
-        <!-- Get closure of indirect references -->
+      <MSBuild Targets="Build"
+               Condition="'$(BuildProjectReferences)' == 'true'"
+               Projects="@(ProjectReference)"
+               Properties="$(ProjectProperties)"
+               ContinueOnError="WarnAndContinue"/>
+
+      <!-- Get closure of indirect references -->
         <MSBuild Projects="@(ProjectReference)"
                  Targets="_NuProjGetProjectClosure"
                  Properties="$(ProjectProperties)"
@@ -215,15 +224,8 @@
             Inputs="%(_NonNuProjProjectReference.Identity)"
             Outputs="fake">
 
-        <!-- First let's make sure that the project references have been fully build,
-             unless building project references is disabled. -->
 
-        <MSBuild Targets="Build"
-                 Condition="'$(BuildProjectReferences)' == 'true'"
-                 Projects="%(_NonNuProjProjectReference.Identity)"
-                 Properties="$(ProjectProperties)" />
-
-        <!-- Now we can ask for the output and all dependencies. -->
+        <!-- Ask for the output and all dependencies. -->
 
         <MSBuild Targets="$(ProjectOutputGroups)"
                  Projects="%(_NonNuProjProjectReference.Identity)"
@@ -520,6 +522,13 @@
 
       </ItemGroup>
 
+      <ItemGroup>
+        <PackageFile Condition="'%(PackageFile.NuProjPackageId)' == ''">
+          <NuProjPackageId>$(Id)</NuProjPackageId>
+          <NuProjPackageVersion>$(Version)</NuProjPackageVersion>
+        </PackageFile>
+      </ItemGroup>
+
   </Target>
 
   <!--
@@ -596,11 +605,55 @@
     =================================================================================================================== -->
 
   <Target Name="GetNuGetFileDependencies"
+          DependsOnTargets="GetNuGetPackageDependencies"
           Returns="@(NuGetFileDependency)">
       <ItemGroup>
         <NuGetFileDependency Include="%(NuGetDependency.PackageDirectoryPath)\**\*"
                              Condition="'%(NuGetDependency.PackageDirectoryPath)' != ''" />
       </ItemGroup>
+  </Target>
+
+  <!--
+  ===================================================================================================================
+  AssignNuProjPackageDependenciesTargetFramework
+  ===================================================================================================================
+
+  Assigns "TargetFramework" metadata to dependencies coming from NuProj projects based on referenced files that can be 
+  removed from package.
+
+  INPUTS:
+      @(NuGetFileDependency)               Files coming from dependencies
+
+  OUTPUTS:
+      @(NuGetFileDependency)               Files coming from dependencies with target framework
+
+  =================================================================================================================== -->
+  
+  <Target Name="AssignNuProjPackageDependenciesTargetFramework"
+          Inputs="@(NuProjDependency)"
+          Outputs="%(NuProjDependency.Identity)"
+          DependsOnTargets="GetNuProjPackageDependencies;GetFiles">
+
+    <ItemGroup>
+      <!-- Clear temporary items. -->
+      <_NuProjDependency Remove="@(_NuProjDependency)" />
+      <_DependencyFile Remove="@(_DependencyFile)" />
+      
+      <!-- Get files that are library and have assigned target framework (so no debug symbols files). -->
+      <_DependencyFile Include="@(File)" 
+                       Condition="'%(File.IsLibrary)' == 'True' 
+                         and '%(File.TargetFramework)' != '' 
+                         and '%(File.NuProjPackageId)' == '%(NuProjDependency.Identity)'"/>
+      
+      <_NuProjDependency Include="@(NuProjDependency)">
+        <TargetFramework>%(_DependencyFile.TargetFramework)</TargetFramework>
+      </_NuProjDependency>
+      
+      <!-- Replace dependency item with ones that have target framework. -->
+      <NuProjDependency Remove="@(_NuProjDependency)" />
+      <NuProjDependency Include="@(_NuProjDependency)" />
+    </ItemGroup>
+
   </Target>
 
   <!--
@@ -616,7 +669,7 @@
     =================================================================================================================== -->
 
   <Target Name="GetPackageDependencies"
-          DependsOnTargets="GetNuProjPackageDependencies;GetNuGetPackageDependencies"
+          DependsOnTargets="AssignNuProjPackageDependenciesTargetFramework;GetNuGetPackageDependencies"
           Returns="@(Dependency)">
     <ItemGroup>
       <Dependency Include="@(NuProjDependency)"
