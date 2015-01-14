@@ -94,7 +94,7 @@ namespace NuProj.Tasks
             return !Log.HasLoggedErrors;
         }
 
-        private bool VerifyRequiredParameters ( Manifest manifest )
+        private bool VerifyRequiredParameters(Manifest manifest)
         {
             var metadata = manifest.Metadata;
             var validationSucceeded = true;
@@ -115,7 +115,7 @@ namespace NuProj.Tasks
             return validationSucceeded;
         }
 
-        private void WriteNuSpecFile( Manifest manifest )
+        private void WriteNuSpecFile(Manifest manifest)
         {
             if (!IsDifferent(manifest))
             {
@@ -152,7 +152,7 @@ namespace NuProj.Tasks
             return oldSource != newSource;
         }
 
-        private Manifest GetDefaultManifest ()
+        private Manifest GetDefaultManifest()
         {
             Manifest manifest;
 
@@ -170,7 +170,7 @@ namespace NuProj.Tasks
             return manifest;
         }
 
-        private void UpdateManifest ( Manifest manifest )
+        private void UpdateManifest(Manifest manifest)
         {
             var manifestMetadata = manifest.Metadata;
 

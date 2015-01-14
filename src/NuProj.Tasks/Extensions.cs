@@ -97,7 +97,7 @@ namespace NuProj.Tasks
             return value.ToString();
         }
 
-        public static string GetPropertyName<T> ( this T target, Expression<Func<T, string>> memberLamda )
+        public static string GetPropertyName<T>(this T target, Expression<Func<T, string>> memberLamda)
         {
             var memberSelectorExpression = memberLamda.Body as MemberExpression;
             if (memberSelectorExpression == null)
@@ -110,7 +110,7 @@ namespace NuProj.Tasks
             return property.Name;
         }
 
-        public static bool IsPropertyNullOrEmpty<T> ( this T target, Expression<Func<T, string>> memberLamda )
+        public static bool IsPropertyNullOrEmpty<T>(this T target, Expression<Func<T, string>> memberLamda)
         {
             var memberSelectorExpression = memberLamda.Body as MemberExpression;
             if (memberSelectorExpression == null)
