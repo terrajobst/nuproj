@@ -33,7 +33,6 @@ namespace NuProj.Tasks
 
         public string MinClientVersion { get; set; }
 
-        [Required]
         public string Id { get; set; }
 
         public string Version { get; set; }
