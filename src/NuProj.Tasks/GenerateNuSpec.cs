@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.Versioning;
 using System.Text;
 using Microsoft.Build.Framework;
@@ -14,6 +15,17 @@ namespace NuProj.Tasks
     {
         private const string NuSpecXmlNamespace = @"http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd";
 
+        private Dictionary<Expression<Func<ManifestMetadata, string>>, Expression<Func<GenerateNuSpec, string>>> RequiredParameters =
+            new Dictionary<Expression<Func<ManifestMetadata, string>>, Expression<Func<GenerateNuSpec, string>>>()
+            {
+                {x=> x.Id, y => y.Id},
+                {x=> x.Version, y => y.Version},
+                {x=> x.Title, y => y.Title},
+                {x=> x.Authors, y => y.Authors},
+                {x=> x.Owners, y => y.Owners},
+                {x=> x.Description, y => y.Description},
+            };
+
         public string InputFileName { get; set; }
 
         [Required]
@@ -24,19 +36,14 @@ namespace NuProj.Tasks
         [Required]
         public string Id { get; set; }
 
-        [Required]
         public string Version { get; set; }
 
-        [Required]
         public string Title { get; set; }
 
-        [Required]
         public string Authors { get; set; }
 
-        [Required]
         public string Owners { get; set; }
 
-        [Required]
         public string Description { get; set; }
 
         public string ReleaseNotes { get; set; }
@@ -71,7 +78,13 @@ namespace NuProj.Tasks
         {
             try
             {
-                WriteNuSpecFile();
+                var manifest = GetDefaultManifest();
+
+                if (!VerifyRequiredParameters(manifest))
+                    return false;
+
+                UpdateManifest(manifest);
+                WriteNuSpecFile(manifest);
             }
             catch (Exception ex)
             {
@@ -82,10 +95,29 @@ namespace NuProj.Tasks
             return !Log.HasLoggedErrors;
         }
 
-        private void WriteNuSpecFile()
+        private bool VerifyRequiredParameters ( Manifest manifest )
         {
-            var manifest = CreateManifest();
+            var metadata = manifest.Metadata;
+            var validationSucceeded = true;
 
+            foreach (var requiredPair in RequiredParameters)
+            {
+                // either the metadata property or the parameter must be non-null and not empty..
+                if ((!metadata.IsPropertyNullOrEmpty(requiredPair.Key)) ||
+                    (!this.IsPropertyNullOrEmpty(requiredPair.Value)))
+                    continue;
+
+                validationSucceeded = false;
+                Log.LogError("The \"{0}\" task was not given a value for the required parameter \"{1}\".", 
+                             GetType().Name, 
+                             this.GetPropertyName(requiredPair.Value));
+            }
+
+            return validationSucceeded;
+        }
+
+        private void WriteNuSpecFile( Manifest manifest )
+        {
             if (!IsDifferent(manifest))
             {
                 Log.LogMessage("Skipping generation of .nuspec because contents are identical.");
@@ -121,31 +153,27 @@ namespace NuProj.Tasks
             return oldSource != newSource;
         }
 
-        private Manifest CreateManifest()
+        private Manifest GetDefaultManifest ()
         {
             Manifest manifest;
-            ManifestMetadata manifestMetadata;
+
             if (!string.IsNullOrEmpty(InputFileName))
             {
                 using (var stream = File.OpenRead(InputFileName))
-                {
                     manifest = Manifest.ReadFrom(stream, false);
-                }
             }
             else
-            {
-                manifest = new Manifest()
-                {
-                    Metadata = new ManifestMetadata(),
-                };
-            }
+                manifest = new Manifest();
 
             if (manifest.Metadata == null)
-            {
                 manifest.Metadata = new ManifestMetadata();
-            }
 
-            manifestMetadata = manifest.Metadata;
+            return manifest;
+        }
+
+        private void UpdateManifest ( Manifest manifest )
+        {
+            var manifestMetadata = manifest.Metadata;
 
             manifestMetadata.UpdateMember(x => x.Authors, Authors);
             manifestMetadata.UpdateMember(x => x.Copyright, Copyright);
@@ -169,8 +197,6 @@ namespace NuProj.Tasks
             manifestMetadata.UpdateMember(x => x.Version, Version);
 
             manifest.AddRangeToMember(x => x.Files, GetManifestFiles());
-
-            return manifest;
         }
 
         private List<ManifestFile> GetManifestFiles()
