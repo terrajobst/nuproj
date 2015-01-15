@@ -20,9 +20,7 @@ namespace NuProj.Tasks
             {
                 {x=> x.Id, y => y.Id},
                 {x=> x.Version, y => y.Version},
-                {x=> x.Title, y => y.Title},
                 {x=> x.Authors, y => y.Authors},
-                {x=> x.Owners, y => y.Owners},
                 {x=> x.Description, y => y.Description},
             };
 
