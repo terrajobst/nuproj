@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using Microsoft.Build.Utilities;
 using NuGet;
@@ -217,10 +218,8 @@ namespace NuProj.Tests
             var solutionDir = Assets.GetScenarioDirectory(scenarioName);
             var projectPath = Path.Combine(solutionDir, projectToBuild);
 
-            Dictionary<string, string> properties = new Dictionary<string, string>()
-            {
-                {"Id", "NoRequiredParameters"}
-            };
+            ImmutableDictionary<string, string> properties = MSBuild.Properties.Default
+                .Add("Id", "NoRequiredParameters");
 
             var result = await MSBuild.ExecuteAsync(projectPath, "GenerateNuSpec", properties);
             result.AssertError("The 'Version' property cannot be empty or undefined.");
@@ -233,11 +232,9 @@ namespace NuProj.Tests
             var solutionDir = Assets.GetScenarioDirectory(scenarioName);
             var projectPath = Path.Combine(solutionDir, projectToBuild);
 
-            Dictionary<string, string> properties = new Dictionary<string, string>()
-            {
-                {"Id", "NoRequiredParameters"},
-                {"Version", "1.0.0"}
-            };
+            ImmutableDictionary<string, string> properties = MSBuild.Properties.Default
+                .Add("Id", "NoRequiredParameters")
+                .Add("Version", "1.0.0");
 
             var result = await MSBuild.ExecuteAsync(projectPath, "GenerateNuSpec", properties);
             result.AssertError("required parameter \"Authors\"");
@@ -252,10 +249,9 @@ namespace NuProj.Tests
             var projectPath = Path.Combine(solutionDir, projectToBuild);
             var templatePath = Path.Combine(solutionDir, templateFile);
 
-            Dictionary<string, string> properties = new Dictionary<string, string>()
-            {
-                {"NuSpecTemplate", templatePath}
-            };
+
+            ImmutableDictionary<string, string> properties = MSBuild.Properties.Default
+                .Add("NuSpecTemplate", templatePath);
 
             // load the template manifest so we can compare it later..
             Manifest templateManifest;
