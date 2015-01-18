@@ -97,6 +97,32 @@ namespace NuProj.Tasks
             return value.ToString();
         }
 
+        public static string GetPropertyName<T>(this T target, Expression<Func<T, string>> memberLamda)
+        {
+            var memberSelectorExpression = memberLamda.Body as MemberExpression;
+            if (memberSelectorExpression == null)
+                throw new InvalidOperationException("Invalid member expression.");
+
+            var property = memberSelectorExpression.Member as PropertyInfo;
+            if (property == null)
+                throw new InvalidOperationException("Invalid member expression.");
+
+            return property.Name;
+        }
+
+        public static bool IsPropertyNullOrEmpty<T>(this T target, Expression<Func<T, string>> memberLamda)
+        {
+            var memberSelectorExpression = memberLamda.Body as MemberExpression;
+            if (memberSelectorExpression == null)
+                throw new InvalidOperationException("Invalid member expression.");
+
+            var property = memberSelectorExpression.Member as PropertyInfo;
+            if (property == null)
+                throw new InvalidOperationException("Invalid member expression.");
+
+            return String.IsNullOrEmpty(property.GetValue(target, null) as String);
+        }
+
         public static void UpdateMember<T>(this T target, Expression<Func<T, string>> memberLamda, string value)
         {
             if (string.IsNullOrEmpty(value))
