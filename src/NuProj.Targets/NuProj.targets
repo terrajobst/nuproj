@@ -4,26 +4,6 @@
   <Import Project="$(CustomBeforeNuProjTargets)" Condition="'$(CustomBeforeNuProjTargets)' != '' and Exists('$(CustomBeforeNuProjTargets)')"/>
 
   <!--
-      NUSPEC PATH
-  -->
-
-  <PropertyGroup>
-    <NuSpecPath>$(IntermediateOutputPath)$(Id).nuspec</NuSpecPath>
-  </PropertyGroup>
-
-  <!--
-      OUTPUT PATHS
-
-      These properties aren't passed to NuGet.exe - they're implicit. However, we need to know the output paths
-      at several occasions (e.g. incremental build or clean up) so we want a central spot to capture those.
-  -->
-
-  <PropertyGroup>
-    <NuGetOutputPath>$([System.IO.Path]::GetFullPath('$(OutDir)$(Id).$(Version).nupkg'))</NuGetOutputPath>
-    <NuGetSymbolsOutputPath>$(OutDir)$(Id).$(Version).symbols.nupkg</NuGetSymbolsOutputPath>
-  </PropertyGroup>
-
-  <!--
       Properties relevant to Visual Studio:
 
       $(BuildingInsideVisualStudio)       This will indicate whether this project is building inside the IDE. When
@@ -109,6 +89,81 @@
   <UsingTask AssemblyFile="$(NuProjTasksPath)" TaskName="ReadPackagesConfig" />
   <UsingTask AssemblyFile="$(NuProjTasksPath)" TaskName="ReadPdbSourceFiles" />
   <UsingTask AssemblyFile="$(NuProjTasksPath)" TaskName="AssignSourceTargetPaths" />
+
+  <!--
+    ===================================================================================================================
+    _GetNuspecRequiredProperties
+    ===================================================================================================================
+    
+    This target ensures the Id and Version properties have assigned values.
+    
+    OUTPUTS:
+        $(Id)                          The Id of the NuGet package.
+        $(Version)                     The Version of the NuGet package.
+        $(NuSpecPath)                  The path of the NuSpec file to output.
+        $(NuGetOutputPath)             The path of the generated NuGet package.
+        $(NuGetSymbolsOutputPath)      The path of the generated NuGet symbols package.
+        
+    =================================================================================================================== -->
+
+  <Target Name="_GetNuspecRequiredProperties">
+
+    <!-- Get Id property from template, if not defined as property. -->
+    <XmlPeek Condition="'$(Id)' == '' And Exists('$(NuSpecTemplate)')"
+             Namespaces="&lt;Namespace Prefix='x' Uri='http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd' /&gt;"
+             XmlInputPath="$(NuSpecTemplate)"
+             Query="/x:package/x:metadata/x:id/text()">
+      <Output TaskParameter="Result" PropertyName="Id"/>
+    </XmlPeek>
+
+    <Error Condition="'$(Id)' == ''"
+           File="$(MSBuildProjectFile)"
+           Text="The 'Id' property cannot be empty or undefined." />
+
+    <!-- Get Version property from template, if not defined as property. -->
+    <XmlPeek Condition="'$(Version)' == '' And Exists('$(NuSpecTemplate)')"
+             Namespaces="&lt;Namespace Prefix='x' Uri='http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd' /&gt;"
+             XmlInputPath="$(NuSpecTemplate)"
+             Query="/x:package/x:metadata/x:version/text()">
+      <Output TaskParameter="Result" PropertyName="Version"/>
+    </XmlPeek>
+
+    <Error Condition="'$(Version)' == ''"
+           File="$(MSBuildProjectFile)"
+           Text="The 'Version' property cannot be empty or undefined." />
+
+    <!-- Get Authors property from template, if not defined as property. -->
+    <XmlPeek Condition="'$(Authors)' == '' And Exists('$(NuSpecTemplate)')"
+             Namespaces="&lt;Namespace Prefix='x' Uri='http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd' /&gt;"
+             XmlInputPath="$(NuSpecTemplate)"
+             Query="/x:package/x:metadata/x:authors/text()">
+      <Output TaskParameter="Result" PropertyName="Authors"/>
+    </XmlPeek>
+
+    <Error Condition="'$(Authors)' == ''"
+           File="$(MSBuildProjectFile)"
+           Text="The 'Authors' property cannot be empty or undefined." />
+
+    <!-- Get Description property from template, if not defined as property. -->
+    <XmlPeek Condition="'$(Description)' == '' And Exists('$(NuSpecTemplate)')"
+             Namespaces="&lt;Namespace Prefix='x' Uri='http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd' /&gt;"
+             XmlInputPath="$(NuSpecTemplate)"
+             Query="/x:package/x:metadata/x:description/text()">
+      <Output TaskParameter="Result" PropertyName="Description"/>
+    </XmlPeek>
+
+    <Error Condition="'$(Description)' == ''"
+           File="$(MSBuildProjectFile)"
+           Text="The 'Description' property cannot be empty or undefined." />
+
+    <!-- Create properties based on Id and Version properties. -->
+    <PropertyGroup>
+      <NuSpecPath>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)$(Id).nuspec'))</NuSpecPath>
+      <NuGetOutputPath>$([System.IO.Path]::GetFullPath('$(OutDir)$(Id).$(Version).nupkg'))</NuGetOutputPath>
+      <NuGetSymbolsOutputPath>$([System.IO.Path]::GetFullPath('$(OutDir)$(Id).$(Version).symbols.nupkg'))</NuGetSymbolsOutputPath>
+    </PropertyGroup>
+
+  </Target>
 
   <!--
     ===================================================================================================================
@@ -392,7 +447,7 @@
     =================================================================================================================== -->
 
   <Target Name="GenerateNuSpec"
-          DependsOnTargets="GetPackageDependencies;GetPackageFiles;GetSourceFiles">
+          DependsOnTargets="_GetNuspecRequiredProperties;GetPackageDependencies;GetPackageFiles;GetSourceFiles">
     <!-- Please Note:
          In order to avoid incremental build issues this target will always run.
          However, the task will make sure that it doesn't touch the file if the
@@ -469,7 +524,7 @@
 
   <Target Name="GetPackageFiles"
           Returns="@(PackageFile)"
-          DependsOnTargets="GetFiles;GetFileDependencies">
+          DependsOnTargets="_GetNuspecRequiredProperties;GetFiles;GetFileDependencies">
 
       <ItemGroup>
         <!-- We need to ensure that package libraries occur only once in their intended target path.
@@ -802,6 +857,27 @@
       <_PackageIdentity Include="$(Id)">
         <Version>$(Version)</Version>
       </_PackageIdentity>
+    </ItemGroup>
+  </Target>
+
+  <!--
+    ===================================================================================================================
+    GetPackageOutputs
+    ===================================================================================================================
+
+    Returns an item group containing the path names of the nupkg files (possibly) generated by the build.
+    
+    OUTPUTS:
+      @(_PackageOutputs)            The items whose identities are the package outputs.
+
+    =================================================================================================================== -->
+
+  <Target Name="GetPackageOutputs"
+          Returns="@(_PackageOutputs)"
+          DependsOnTargets="_GetNuspecRequiredProperties">
+    <ItemGroup>
+      <_PackageOutputs Include="$(NuGetOutputPath)" />
+      <_PackageOutputs Include="$(NuGetSymbolsOutputPath)" />
     </ItemGroup>
   </Target>
 
