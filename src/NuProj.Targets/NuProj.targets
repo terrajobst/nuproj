@@ -852,7 +852,8 @@
     =================================================================================================================== -->
 
   <Target Name="GetPackageIdentity"
-          Returns="@(_PackageIdentity)">
+          Returns="@(_PackageIdentity)"
+          DependsOnTargets="_GetNuspecRequiredProperties">
     <ItemGroup>
       <_PackageIdentity Include="$(Id)">
         <Version>$(Version)</Version>
