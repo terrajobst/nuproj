@@ -100,6 +100,95 @@
   </PropertyGroup>
 
   <!--
+      NUSPEC PROJECT PROPERTIES
+      
+      These are properties that are used to generate the nuspec file.
+  -->
+
+  <ItemGroup>
+    <NuSpecProjectProperties Include="Id">
+      <IsRequired>true</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <NuSpecXPath></NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="Version">
+      <IsRequired>true</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <NuSpecXPath></NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="Title">
+      <IsRequired>false</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <NuSpecXPath></NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="Authors">
+      <IsRequired>true</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <NuSpecXPath></NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="Owners">
+      <IsRequired>false</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <NuSpecXPath></NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="Description">
+      <IsRequired>true</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <NuSpecXPath></NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="ReleaseNotes">
+      <IsRequired>false</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <NuSpecXPath></NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="Summary">
+      <IsRequired>false</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <NuSpecXPath></NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="Language">
+      <IsRequired>false</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <NuSpecXPath></NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="ProjectUrl">
+      <IsRequired>false</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <NuSpecXPath></NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="IconUrl">
+      <IsRequired>false</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <NuSpecXPath></NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="LicenseUrl">
+      <IsRequired>false</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <NuSpecXPath></NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="Copyright">
+      <IsRequired>false</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <NuSpecXPath></NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="RequireLicenseAcceptance">
+      <IsRequired>false</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <NuSpecXPath></NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="Tags">
+      <IsRequired>false</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <NuSpecXPath></NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="DevelopmentDependency">
+      <IsRequired>false</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <NuSpecXPath></NuSpecXPath>
+    </NuSpecProjectProperties>
+  </ItemGroup>
+
+  <!--
       CUSTOM TASKS
   -->
 
