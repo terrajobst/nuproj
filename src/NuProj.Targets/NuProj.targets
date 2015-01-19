@@ -109,6 +109,7 @@
   <UsingTask AssemblyFile="$(NuProjTasksPath)" TaskName="ReadPackagesConfig" />
   <UsingTask AssemblyFile="$(NuProjTasksPath)" TaskName="ReadPdbSourceFiles" />
   <UsingTask AssemblyFile="$(NuProjTasksPath)" TaskName="AssignSourceTargetPaths" />
+  <UsingTask AssemblyFile="$(NuProjTasksPath)" TaskName="ExpandAssemblyProperties" />
 
   <!--
     ===================================================================================================================
@@ -358,6 +359,101 @@
 
   <!--
     ===================================================================================================================
+    ExpandPackageProperties
+    ===================================================================================================================
+
+    TODO: ...
+  -->
+  <Target Name="ExpandPackageProperties"
+          DependsOnTargets="ExpandProjectReferences">
+
+    <!-- filter the @(Library) files to outputs from 'BuiltProjectOutputGroup' only, we're only
+         interested in assemblies directly produced by the project. -->
+    
+    <ItemGroup>
+      <_BuiltLibrary Include="@(Library)"
+                     Condition="'%(Library.MSBuildSourceTargetName)' == 'BuiltProjectOutputGroup'"/>
+    </ItemGroup>
+    
+    <!-- create an item list of the properties that can be expanded with metadata from the 
+         assembly references. This group needs to be declared in the target to ensure that
+         the properties are not evaluated until the target is run. -->
+
+    <ItemGroup>
+      <_ExpandableProperties Include="Id">
+        <PropertyValue>$(Id)</PropertyValue>
+      </_ExpandableProperties>
+      
+      <_ExpandableProperties Include="Version">
+        <PropertyValue>$(Version)</PropertyValue>
+      </_ExpandableProperties>
+
+      <_ExpandableProperties Include="Title">
+        <PropertyValue>$(Title)</PropertyValue>
+      </_ExpandableProperties>
+
+      <_ExpandableProperties Include="Authors">
+        <PropertyValue>$(Authors)</PropertyValue>
+      </_ExpandableProperties>
+
+      <_ExpandableProperties Include="Owners">
+        <PropertyValue>$(Owners)</PropertyValue>
+      </_ExpandableProperties>
+
+      <_ExpandableProperties Include="Description">
+        <PropertyValue>$(Description)</PropertyValue>
+      </_ExpandableProperties>
+
+      <_ExpandableProperties Include="ReleaseNotes">
+        <PropertyValue>$(ReleaseNotes)</PropertyValue>
+      </_ExpandableProperties>
+
+      <_ExpandableProperties Include="Summary">
+        <PropertyValue>$(Summary)</PropertyValue>
+      </_ExpandableProperties>
+
+      <_ExpandableProperties Include="Language">
+        <PropertyValue>$(Language)</PropertyValue>
+      </_ExpandableProperties>
+
+      <_ExpandableProperties Include="ProjectUrl">
+        <PropertyValue>$(ProjectUrl)</PropertyValue>
+      </_ExpandableProperties>
+
+      <_ExpandableProperties Include="IconUrl">
+        <PropertyValue>$(IconUrl)</PropertyValue>
+      </_ExpandableProperties>
+
+      <_ExpandableProperties Include="LicenseUrl">
+        <PropertyValue>$(LicenseUrl)</PropertyValue>
+      </_ExpandableProperties>
+
+      <_ExpandableProperties Include="Copyright">
+        <PropertyValue>$(Copyright)</PropertyValue>
+      </_ExpandableProperties>
+
+      <_ExpandableProperties Include="Tags">
+        <PropertyValue>$(Tags)</PropertyValue>
+      </_ExpandableProperties>
+    </ItemGroup>
+
+    <!-- Expand all of the expandable properties -->
+    <ExpandAssemblyProperties Libraries="@(_BuiltLibrary)"
+                         ExpandableProperties="@(_ExpandableProperties)">
+      <Output TaskParameter="ExpandedProperties"
+              ItemName="_ExpandedProperties" />
+    </ExpandAssemblyProperties>
+
+    <!-- Update the property values -->
+    <CreateProperty Value="%(_ExpandedProperties.PropertyValue)">
+      <Output TaskParameter="Value"
+              PropertyName="%(Identity)" />
+    </CreateProperty>
+
+  </Target>
+  
+  <!--
+    ===================================================================================================================
     GenerateNuSpec
     ===================================================================================================================
 
@@ -392,7 +488,7 @@
     =================================================================================================================== -->
 
   <Target Name="GenerateNuSpec"
-          DependsOnTargets="GetPackageDependencies;GetPackageFiles;GetSourceFiles">
+          DependsOnTargets="GetPackageDependencies;GetPackageFiles;GetSourceFiles;ExpandPackageProperties">
     <!-- Please Note:
          In order to avoid incremental build issues this target will always run.
          However, the task will make sure that it doesn't touch the file if the
@@ -797,6 +893,7 @@
     =================================================================================================================== -->
 
   <Target Name="GetPackageIdentity"
+          DependsOnTargets="ExpandPackageProperties"
           Returns="@(_PackageIdentity)">
     <ItemGroup>
       <_PackageIdentity Include="$(Id)">

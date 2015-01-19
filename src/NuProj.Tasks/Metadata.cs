@@ -13,5 +13,11 @@
         public const string TargetFrameworkMoniker = "TargetFrameworkMoniker";
         
         public const string Version = "Version";
+
+        public const string SourceProjectFile = "MSBuildSourceProjectFile";
+
+        public const string SourceTargetName = "MSBuildSourceTargetName";
+
+        public const string PropertyValue = "PropertyValue";
     }
 }
