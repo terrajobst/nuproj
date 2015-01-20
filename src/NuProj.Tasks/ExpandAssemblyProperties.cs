@@ -32,7 +32,6 @@ namespace NuProj.Tasks
         {
             try
             {
-
                 // build a dictionary of built libraries, where the value for each built library is a dictionary
                 // of assembly property names and values. 
 
@@ -93,6 +92,9 @@ namespace NuProj.Tasks
                 AddAssemblyProperties(knownAssemblies, projectNameWithExtension, assemblyProperties);
                 AddAssemblyProperties(knownAssemblies, projectName + "." + propertyItem.GetMetadata(Metadata.TargetFramework), assemblyProperties);
                 AddAssemblyProperties(knownAssemblies, projectNameWithExtension + "." + propertyItem.GetMetadata(Metadata.TargetFramework), assemblyProperties);
+
+                foreach (var k in knownAssemblies)
+                    Log.LogMessage(MessageImportance.High, "{0}", k.Key);
             }
 
             return knownAssemblies;

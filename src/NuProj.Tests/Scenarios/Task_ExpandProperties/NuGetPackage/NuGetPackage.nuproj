@@ -19,12 +19,12 @@
   <Import Project="$(NuProjPath)\NuProj.props" Condition="Exists('$(NuProjPath)\NuProj.props')" />
   <PropertyGroup Label="Configuration">
     <Id>NuGetPackage</Id>
-    <Version>1.0.0</Version>
-    <Title>NuGetPackage</Title>
-    <Authors>immol</Authors>
+    <Version>|ClassLibrary_AssemblyVersion|</Version>
+    <Title>|ClassLibrary.net45_AssemblyTitle|</Title>
+    <Authors>|ClassLibrary.csproj.net45_AssemblyProduct| || |ClassLibrary_AssemblyFileVersion_Major|.|ClassLibrary_AssemblyFileVersion_Minor|</Authors>
     <Owners>immol</Owners>
     <Summary>NuGetPackage</Summary>
-    <Description>NuGetPackage</Description>
+    <Description>|ClassLibrary.csproj_ProjectUrl|</Description>
     <ReleaseNotes>
     </ReleaseNotes>
     <ProjectUrl>
