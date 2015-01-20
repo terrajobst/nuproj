@@ -80,6 +80,111 @@
   </PropertyGroup>
 
   <!--
+      NUSPEC PROJECT PROPERTIES
+      
+      These are properties that are used to generate the nuspec file.
+  -->
+
+  <ItemGroup>
+    <NuSpecProjectProperties Include="Id">
+      <IsRequired>true</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <PropertyValue>$(Id)</PropertyValue>
+      <NuSpecXPath>//*[local-name()='package']/*[local-name()='metadata']/*[local-name()='id']/text()</NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="Version">
+      <IsRequired>true</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <PropertyValue>$(Version)</PropertyValue>
+      <NuSpecXPath>//*[local-name()='package']/*[local-name()='metadata']/*[local-name()='version']/text()</NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="Title">
+      <IsRequired>false</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <PropertyValue>$(Title)</PropertyValue>
+      <NuSpecXPath>//*[local-name()='package']/*[local-name()='metadata']/*[local-name()='title']/text()</NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="Authors">
+      <IsRequired>true</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <PropertyValue>$(Authors)</PropertyValue>
+      <NuSpecXPath>//*[local-name()='package']/*[local-name()='metadata']/*[local-name()='authors']/text()</NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="Owners">
+      <IsRequired>false</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <PropertyValue>$(Owners)</PropertyValue>
+      <NuSpecXPath>//*[local-name()='package']/*[local-name()='metadata']/*[local-name()='owners']/text()</NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="Description">
+      <IsRequired>true</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <PropertyValue>$(Description)</PropertyValue>
+      <NuSpecXPath>//*[local-name()='package']/*[local-name()='metadata']/*[local-name()='description']/text()</NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="ReleaseNotes">
+      <IsRequired>false</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <PropertyValue>$(ReleaseNotes)</PropertyValue>
+      <NuSpecXPath>//*[local-name()='package']/*[local-name()='metadata']/*[local-name()='releaseNotes']/text()</NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="Summary">
+      <IsRequired>false</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <PropertyValue>$(Summary)</PropertyValue>
+      <NuSpecXPath>//*[local-name()='package']/*[local-name()='metadata']/*[local-name()='summary']/text()</NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="Language">
+      <IsRequired>false</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <PropertyValue>$(Language)</PropertyValue>
+      <NuSpecXPath>//*[local-name()='package']/*[local-name()='metadata']/*[local-name()='language']/text()</NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="ProjectUrl">
+      <IsRequired>false</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <PropertyValue>$(ProjectUrl)</PropertyValue>
+      <NuSpecXPath>//*[local-name()='package']/*[local-name()='metadata']/*[local-name()='projectUrl']/text()</NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="IconUrl">
+      <IsRequired>false</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <PropertyValue>$(IconUrl)</PropertyValue>
+      <NuSpecXPath>//*[local-name()='package']/*[local-name()='metadata']/*[local-name()='iconUrl']/text()</NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="LicenseUrl">
+      <IsRequired>false</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <PropertyValue>$(LicenseUrl)</PropertyValue>
+      <NuSpecXPath>//*[local-name()='package']/*[local-name()='metadata']/*[local-name()='licenseUrl']/text()</NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="Copyright">
+      <IsRequired>false</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <PropertyValue>$(Copyright)</PropertyValue>
+      <NuSpecXPath>//*[local-name()='package']/*[local-name()='metadata']/*[local-name()='copyright']/text()</NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="RequireLicenseAcceptance">
+      <IsRequired>false</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <PropertyValue>$(RequireLicenseAcceptance)</PropertyValue>
+      <NuSpecXPath>//*[local-name()='package']/*[local-name()='metadata']/*[local-name()='requireLicenseAcceptance']/text()</NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="Tags">
+      <IsRequired>false</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <PropertyValue>$(Tags)</PropertyValue>
+      <NuSpecXPath>//*[local-name()='package']/*[local-name()='metadata']/*[local-name()='tags']/text()</NuSpecXPath>
+    </NuSpecProjectProperties>
+    <NuSpecProjectProperties Include="DevelopmentDependency">
+      <IsRequired>false</IsRequired>
+      <IsExpandable>true</IsExpandable>
+      <PropertyValue>$(DevelopmentDependency)</PropertyValue>
+      <NuSpecXPath>//*[local-name()='package']/*[local-name()='metadata']/*[local-name()='developmentDependency']/text()</NuSpecXPath>
+    </NuSpecProjectProperties>
+  </ItemGroup>
+
+  <!--
       CUSTOM TASKS
   -->
 
@@ -165,6 +270,85 @@
 
   </Target>
 
+  <!--
+    ===================================================================================================================
+    _NuProjGetTemplateProperties
+    ===================================================================================================================
+    
+    Reads the value of all properties in @(NuSpecProjectProperties) from $(NuSpecTemplate) if
+    the associated configuration property is empty.
+    
+    INPUTS:
+      @(NuSpecProjectProperties)      The set of defined properties that can be retrieved from the
+                                      nuspec template file.
+      
+    OUTPUTS:
+      @(NuSpecProjectProperties)      The set of defined properties, with %(NuSpecProjectProperties.PropertyValue)
+                                      updated to the value defined in $(NuSpecTemplate) if the associated
+                                      configuration property was not set.
+    
+    =================================================================================================================== -->
+
+  <Target Name="_NuProjGetTemplateProperties" 
+          Condition="Exists($(NuSpecTemplate))"
+          Outputs="%(NuSpecProjectProperties.Identity)">
+
+    <Message Condition=" '%(NuSpecProjectProperties.PropertyValue)' != '' "
+             Text="Property '%(NuSpecProjectProperties.Identity)' set from project configuration."
+             Importance="low"/>
+
+    <XmlPeek Condition=" '%(NuSpecXPath)' != '' And '%(PropertyValue)' == '' "
+             Query="%(NuSpecProjectProperties.NuSpecXPath)"
+             XmlInputPath="$(NuSpecTemplate)">
+      <Output TaskParameter="Result" PropertyName="_QueryResult" />
+    </XmlPeek>
+    
+    <Message Condition=" '%(NuSpecProjectProperties.PropertyValue)' == '' And '$(_QueryResult)' != '' "
+             Text="Property '%(NuSpecProjectProperties.Identity)' set from template file."
+             Importance="low"/>
+
+    <ItemGroup>
+      <NuSpecProjectProperties Condition=" '%(NuSpecProjectProperties.Identity)' == '%(Identity)' And '%(PropertyValue)' == '' ">
+        <PropertyValue>$(_QueryResult)</PropertyValue>
+      </NuSpecProjectProperties>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <!-- make sure the _QueryResult property is clear on the way out.. -->
+      <_QueryResult></_QueryResult>
+    </PropertyGroup>
+
+  </Target>
+  
+  <!--
+    ===================================================================================================================
+    _NuProjEnsureRequiredProperties
+    ===================================================================================================================
+
+    Validates that all @(NuSpecProjectProperties) with the "IsRequired" metadata have a non-empty "PropertyValue" 
+    metadata. If all required properties are defined, updates the MSBuild properties associated with the
+    @(NuSpecProjectProperties).
+
+    INPUTS:
+      @(NuSpecProjectProperties)      The set of defined properties that can be retrieved from the
+                                      nuspec template file.
+                                      
+    =================================================================================================================== -->
+
+  <Target Name="_NuProjEnsureRequiredProperties"
+          DependsOnTargets="_NuProjGetTemplateProperties">
+
+    <!-- error on any required properties that are missing -->
+    <Error Condition=" '%(NuSpecProjectProperties.IsRequired)' == 'true' And '%(PropertyValue)' == '' "
+           Text="The '%(Identity)' property cannot be empty or undefined." />
+
+    <!-- update MSBuild properties with the values from NuSpecProjectProperties -->
+    <CreateProperty Value="%(NuSpecProjectProperties.PropertyValue)">
+      <Output TaskParameter="Value" PropertyName="%(Identity)" />      
+    </CreateProperty>
+    
+  </Target>
+  
   <!--
     ===================================================================================================================
     _NuProjGetProjectClosure
