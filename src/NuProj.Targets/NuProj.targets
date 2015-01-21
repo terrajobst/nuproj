@@ -251,7 +251,16 @@
     _NuProjExpandProperties
     ===================================================================================================================
 
-    TODO: ...
+    Evaluates all expandable properties in 
+
+    INPUT:
+      @(NuSpecProjectProperties)            The array of properties used to generate the NuSpec file
+      
+      @(Library)                            The library Files to be packaged     
+      
+    OUTPUT:
+      @(NuSpecProjectProperties)            The array of properties used to generate the NuSpec file, with expandable
+                                            properties expanded.
     
     =================================================================================================================== -->
   
