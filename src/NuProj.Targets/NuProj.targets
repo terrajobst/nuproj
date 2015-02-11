@@ -55,6 +55,11 @@
     <BuildProjectReferences Condition="'$(BuildProjectReferences)' == ''">true</BuildProjectReferences>
   </PropertyGroup>
 
+  <!-- CleanFile is used to track file writes between builds. -->
+  <PropertyGroup>
+    <CleanFile Condition="'$(CleanFile)'==''">$(MSBuildProjectFile).FileListAbsolute.txt</CleanFile>
+  </PropertyGroup>
+
   <!--
       MSBuildAllProjects is used to keep track of all projects the build depends on.
       We make all targets depending on it to make sure everything rebuilds.
@@ -421,6 +426,12 @@
                     References="@(Reference)"
                     FrameworkReferences="@(FrameworkReference)"
                     Files="@(PackageFile)"/>
+
+    <!-- Include the $(NuSpecPath) file in the group of written files. -->
+    <ItemGroup>
+      <FileWrites Include="$(NuSpecPath)" />
+    </ItemGroup>
+
   </Target>
 
   <!--
@@ -453,6 +464,11 @@
                ToolPath="$(NuGetToolPath)"
                ToolExe="$(NuGetToolExe)"
                NuSpecPath="$(NuSpecPath)"/>
+    <!-- Include nuget packages in written files. -->
+    <ItemGroup>
+      <FileWrites Include="$(NuGetOutputPath)" />
+      <FileWrites Include="$(NuGetSymbolsOutputPath)" Condition="Exists('$(NuGetSymbolsOutputPath)')"/>
+    </ItemGroup>
   </Target>
 
   <!--
@@ -781,7 +797,7 @@
               ItemName="_SourceFileWithTargetPath" />
       <Output TaskParameter="SourceFilesWithTargetPath"
               ItemName="PackageFile" />
-    </AssignSourceTargetPaths>
+    </AssignSourceTargetPaths>  
   </Target>
 
   <!--
@@ -808,6 +824,123 @@
 
   <!--
     ===================================================================================================================
+    Incremental Clean
+    
+    Remove files produced from previous builds, but were not produced in the current build. 
+    
+    =================================================================================================================== -->
+
+  <Target Name="IncrementalClean"
+          DependsOnTargets="_CleanGetCurrentAndPriorFileWrites">
+
+    <!-- Remove files built in prior builds from the list of files built in this build. -->
+    <ItemGroup>
+      <_CleanOrphanFileWrites Include="@(_CleanPriorFileWrites)" Exclude="@(_CleanCurrentFileWrites)" />
+    </ItemGroup>
+
+    <!-- Find all files in the final output directory. -->
+    <FindUnderPath Path="$(OutDir)" Files="@(_CleanOrphanFileWrites)">
+      <Output TaskParameter="InPath" ItemName="_CleanOrphanFileWritesInOutput"/>
+    </FindUnderPath>
+
+    <!-- Find all files in the intermediate output directory. -->
+    <FindUnderPath Path="$(IntermediateOutputPath)" Files="@(_CleanOrphanFileWrites)">
+      <Output TaskParameter="InPath" ItemName="_CleanOrphanFileWritesInIntermediate"/>
+    </FindUnderPath>
+
+    <!-- Delete the orphaned files. -->
+    <Delete
+        Files="@(_CleanOrphanFileWritesInIntermediate);@(_CleanOrphanFileWritesInOutput)"
+        TreatErrorsAsWarnings="true">
+      <Output TaskParameter="DeletedFiles" ItemName="_CleanOrphanFilesDeleted"/>
+    </Delete>
+
+    <!-- Create a list of everything that wasn't deleted or was outside
+             the current final output and intermediate output directories. -->
+    <ItemGroup>
+      <_CleanRemainingFileWritesAfterIncrementalClean Include="@(_CleanPriorFileWrites);@(_CleanCurrentFileWrites)" Exclude="@(_CleanOrphanFilesDeleted)"/>
+    </ItemGroup>
+
+    <!-- Remove duplicates. -->
+    <RemoveDuplicates Inputs="@(_CleanRemainingFileWritesAfterIncrementalClean)">
+      <Output TaskParameter="Filtered" ItemName="_CleanUniqueRemainingFileWritesAfterIncrementalClean"/>
+    </RemoveDuplicates>
+
+    <!-- Write new list of current files back to disk, replacing the existing list.-->
+    <WriteLinesToFile
+        File="$(IntermediateOutputPath)$(CleanFile)"
+        Lines="@(_CleanUniqueRemainingFileWritesAfterIncrementalClean)"
+        Condition="'@(_CleanUnfilteredPriorFileWrites)'!='@(_CleanUniqueRemainingFileWritesAfterIncrementalClean)'"
+        Overwrite="true"/>
+
+  </Target>
+
+  <!--
+    ===================================================================================================================
+    _CleanGetCurrentAndPriorFileWrites
+    =================================================================================================================== -->
+
+  <Target Name="_CleanGetCurrentAndPriorFileWrites">
+
+    <!-- Read the list of files produced by prior builds. -->
+    <ReadLinesFromFile File="$(IntermediateOutputPath)$(CleanFile)">
+      <Output TaskParameter="Lines" ItemName="_CleanUnfilteredPriorFileWrites"/>
+    </ReadLinesFromFile>
+
+    <ItemGroup>
+      <_CleanPriorFileWrites Include="@(_CleanUnfilteredPriorFileWrites)" />
+    </ItemGroup>
+
+    <!-- find all files in the final output directory -->
+    <FindUnderPath Path="$(OutDir)" Files="@(FileWrites)" UpdateToAbsolutePaths="true">
+      <Output TaskParameter="InPath" ItemName="_CleanCurrentFileWritesInOutput" />
+    </FindUnderPath>
+
+    <!-- find all files in the intermediate output directory -->
+    <FindUnderPath Path="$(IntermediateOutputPath)" Files="@(FileWrites)" UpdateToAbsolutePaths="true">
+      <Output TaskParameter="InPath" ItemName="_CleanCurrentFileWritesInIntermediate" />
+    </FindUnderPath>
+
+    <RemoveDuplicates Inputs="@(_CleanCurrentFileWritesInOutput);@(_CleanCurrentFileWritesInIntermediate)">
+      <Output TaskParameter="Filtered" ItemName="_CleanCurrentFileWrites"/>
+    </RemoveDuplicates>
+
+  </Target>
+
+  <!--
+    ============================================================
+                                        _CleanRecordFileWrites
+
+    Save the list of all files written to disk so that it can be used for "Clean" later.
+
+    Files written in prior builds are not removed from Clean cache.
+    ============================================================
+    -->
+  <Target
+       Name="_CleanRecordFileWrites"
+       DependsOnTargets="_CleanGetCurrentAndPriorFileWrites">
+
+    <!--
+        Merge list of files from prior builds with the current build and then
+        remove duplicates.
+        -->
+    <RemoveDuplicates Inputs="@(_CleanPriorFileWrites);@(_CleanCurrentFileWrites)">
+      <Output TaskParameter="Filtered" ItemName="_CleanUniqueFileWrites"/>
+    </RemoveDuplicates>
+
+    <!-- Make sure the directory exists. -->
+    <MakeDir Directories="$(IntermediateOutputPath)"/>
+
+    <!-- Write merged file list back to disk, replacing existing contents. -->
+    <WriteLinesToFile
+        File="$(IntermediateOutputPath)$(CleanFile)"
+        Lines="@(_CleanUniqueFileWrites)"
+        Overwrite="true" />
+
+  </Target>
+
+  <!--
+    ===================================================================================================================
     Clean, Build, Rebuild
     ===================================================================================================================
 
@@ -828,19 +961,52 @@
              Properties="$(ProjectProperties)" />
 
     <!-- Delete our outputs and intermediates. -->
+    <!-- Read in list of files that were written to disk in past builds. -->
+    <ReadLinesFromFile File="$(IntermediateOutputPath)$(CleanFile)">
+      <Output TaskParameter="Lines" ItemName="_CleanPriorFileWrites"/>
+    </ReadLinesFromFile>
 
+    <!-- Find all files in the final output directory. -->
+    <FindUnderPath Path="$(OutDir)" Files="@(_CleanPriorFileWrites)">
+      <Output TaskParameter="InPath" ItemName="_CleanPriorFileWritesInOutput"/>
+    </FindUnderPath>
+
+    <!-- Find all files in the intermediate output directory. -->
+    <FindUnderPath Path="$(IntermediateOutputPath)"    Files="@(_CleanPriorFileWrites)">
+      <Output TaskParameter="InPath" ItemName="_CleanPriorFileWritesInIntermediate"/>
+    </FindUnderPath>
+
+    <!-- Delete those files. -->
+    <Delete
+        Files="@(_CleanPriorFileWritesInOutput);@(_CleanPriorFileWritesInIntermediate)"
+        TreatErrorsAsWarnings="true">
+
+      <Output TaskParameter="DeletedFiles" ItemName="_CleanPriorFileWritesDeleted"/>
+
+    </Delete>
+
+    <!-- Create a list of everything that wasn't deleted. -->
     <ItemGroup>
-      <_ToBeDeleted Include="$(NuSpecPath)" />
-      <_ToBeDeleted Include="$(NuGetOutputPath)" />
-      <_ToBeDeleted Include="$(NuGetSymbolsOutputPath)" />
+      <_CleanRemainingFileWritesAfterClean Include="@(_CleanPriorFileWrites)" Exclude="@(_CleanPriorFileWritesDeleted)"/>
     </ItemGroup>
-    <Delete Files="@(_ToBeDeleted)" />
+
+    <!-- Remove duplicates. -->
+    <RemoveDuplicates Inputs="@(_CleanRemainingFileWritesAfterClean)">
+      <Output TaskParameter="Filtered" ItemName="_CleanUniqueRemainingFileWrites"/>
+    </RemoveDuplicates>
+
+    <!-- Make sure the directory exists. -->
+    <MakeDir Directories="$(IntermediateOutputPath)"/>
+
+    <!-- Write new list of current files back to disk. -->
+    <WriteLinesToFile File="$(IntermediateOutputPath)$(CleanFile)" Lines="@(_CleanUniqueRemainingFileWrites)" Overwrite="true" />
 
   </Target>
 
-  <Target Name="Build" DependsOnTargets="CreatePackage">
+  <Target Name="Build" DependsOnTargets="CreatePackage;IncrementalClean">
     <Message Text="$(MSBuildProjectName) -> $(NuGetOutputPath)"
              Importance="high" />
+    <OnError ExecuteTargets="_CleanRecordFileWrites" />
   </Target>
 
   <Target Name="Rebuild" DependsOnTargets="Clean;Build" />

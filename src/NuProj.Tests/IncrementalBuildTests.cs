@@ -84,5 +84,45 @@ namespace NuProj.Tests
             Assert.Equal(expectedDescription1, actualDescription1);
             Assert.Equal(expectedDescription2, actualDescription2);
         }
+
+        [Fact]
+        public async Task IncrementalBuild_CleanOldProducts()
+        {
+            var solutionPath = Assets.GetScenarioSolutionPath("IncrementalBuild_CleanOldProducts");
+            var projectPath = Path.GetDirectoryName(solutionPath);
+
+            // perform first build
+            var properties = MSBuild.Properties.Default.Add("Version", "4.4.4");
+            var result1 = await MSBuild.ExecuteAsync(solutionPath, "Build", properties);
+            result1.AssertSuccessfulBuild();
+
+            // ensure that expected files exist..
+            Assert.True(File.Exists(Path.Combine(projectPath, @"NuGetPackage\obj\Debug\NuGetPackage.nuspec")));
+            Assert.True(File.Exists(Path.Combine(projectPath, @"NuGetPackage\bin\Debug\NuGetPackage.4.4.4.nupkg")));
+            Assert.True(File.Exists(Path.Combine(projectPath, @"NuGetPackage\bin\Debug\NuGetPackage.4.4.4.symbols.nupkg")));
+
+            // perform second build..
+            properties = MSBuild.Properties.Default.Add("Version", "5.5.5");
+            result1 = await MSBuild.ExecuteAsync(solutionPath, "Build", properties);
+            result1.AssertSuccessfulBuild();
+
+            // ensure that expected files exist..
+            Assert.True(File.Exists(Path.Combine(projectPath, @"NuGetPackage\obj\Debug\NuGetPackage.nuspec")));
+            Assert.True(File.Exists(Path.Combine(projectPath, @"NuGetPackage\bin\Debug\NuGetPackage.5.5.5.nupkg")));
+            Assert.True(File.Exists(Path.Combine(projectPath, @"NuGetPackage\bin\Debug\NuGetPackage.5.5.5.symbols.nupkg")));
+
+            // ensure that the original files do not exist..
+            Assert.False(File.Exists(Path.Combine(projectPath, @"NuGetPackage\bin\Debug\NuGetPackage.4.4.4.nupkg")));
+            Assert.False(File.Exists(Path.Combine(projectPath, @"NuGetPackage\bin\Debug\NuGetPackage.4.4.4.symbols.nupkg")));
+
+            // perform third build..
+            result1 = await MSBuild.ExecuteAsync(solutionPath, "Clean");
+            result1.AssertSuccessfulBuild();
+
+            // ensure that expected files do not exist..
+            Assert.False(File.Exists(Path.Combine(projectPath, @"NuGetPackage\obj\Debug\NuGetPackage.nuspec")));
+            Assert.False(File.Exists(Path.Combine(projectPath, @"NuGetPackage\bin\Debug\NuGetPackage.5.5.5.nupkg")));
+            Assert.False(File.Exists(Path.Combine(projectPath, @"NuGetPackage\bin\Debug\NuGetPackage.5.5.5.symbols.nupkg")));
+        }
     }
 }
