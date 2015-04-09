@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using Microsoft.Build.Utilities;
 using NuGet;
@@ -22,7 +23,8 @@ namespace NuProj.Tests
 
         public void Dispose()
         {
-            Directory.Delete(_projectDirectory, true);
+            if (Directory.Exists(_projectDirectory))
+                Directory.Delete(_projectDirectory, true);
         }
 
         [Fact]
@@ -196,6 +198,109 @@ namespace NuProj.Tests
                     manifest.Files,
                     ManifestFileComparer.Instance);
             }
+        }
+
+        [Theory]
+        [InlineData("Task_GenerateNuSpec_NoRequiredParameters", @"NuGetPackage\NuGetPackage.nuproj")]
+        public async System.Threading.Tasks.Task Task_GenerateNuSpec_NoRequiredParameters ( string scenarioName, string projectToBuild )
+        {
+            var solutionDir = Assets.GetScenarioDirectory(scenarioName);
+            var projectPath = Path.Combine(solutionDir, projectToBuild);
+
+            var result = await MSBuild.ExecuteAsync(projectPath, "GenerateNuSpec");
+            result.AssertError("The 'Id' property cannot be empty or undefined.");
+        }
+
+        [Theory]
+        [InlineData("Task_GenerateNuSpec_NoRequiredParameters", @"NuGetPackage\NuGetPackage.nuproj")]
+        public async System.Threading.Tasks.Task Task_GenerateNuSpec_NoRequiredParameters_IdOnly ( string scenarioName, string projectToBuild )
+        {
+            var solutionDir = Assets.GetScenarioDirectory(scenarioName);
+            var projectPath = Path.Combine(solutionDir, projectToBuild);
+
+            ImmutableDictionary<string, string> properties = MSBuild.Properties.Default
+                .Add("Id", "NoRequiredParameters");
+
+            var result = await MSBuild.ExecuteAsync(projectPath, "GenerateNuSpec", properties);
+            result.AssertError("The 'Version' property cannot be empty or undefined.");
+        }
+
+        [Theory]
+        [InlineData("Task_GenerateNuSpec_NoRequiredParameters", @"NuGetPackage\NuGetPackage.nuproj")]
+        public async System.Threading.Tasks.Task Task_GenerateNuSpec_NoRequiredParameters_IdAndVersion ( string scenarioName, string projectToBuild )
+        {
+            var solutionDir = Assets.GetScenarioDirectory(scenarioName);
+            var projectPath = Path.Combine(solutionDir, projectToBuild);
+
+            ImmutableDictionary<string, string> properties = MSBuild.Properties.Default
+                .Add("Id", "NoRequiredParameters")
+                .Add("Version", "1.0.0");
+
+            var result = await MSBuild.ExecuteAsync(projectPath, "GenerateNuSpec", properties);
+            result.AssertError("The 'Authors' property cannot be empty or undefined.");
+        }
+
+        [Theory]
+        [InlineData("Task_GenerateNuSpec_NoRequiredParameters", @"NuGetPackage\NuGetPackage.nuproj")]
+        public async System.Threading.Tasks.Task Task_GenerateNuSpec_NoRequiredParameters_IdVersionAndAuthors ( string scenarioName, string projectToBuild )
+        {
+            var solutionDir = Assets.GetScenarioDirectory(scenarioName);
+            var projectPath = Path.Combine(solutionDir, projectToBuild);
+
+            ImmutableDictionary<string, string> properties = MSBuild.Properties.Default
+                .Add("Id", "NoRequiredParameters")
+                .Add("Version", "1.0.0")
+                .Add("Authors", "authors");
+
+            var result = await MSBuild.ExecuteAsync(projectPath, "GenerateNuSpec", properties);
+            result.AssertError("The 'Description' property cannot be empty or undefined.");
+        }
+
+        [Theory]
+        [InlineData("Task_GenerateNuSpec_NoRequiredParameters", @"NuGetPackage\NuGetPackage.nuproj")]
+        public async System.Threading.Tasks.Task Task_GenerateNuSpec_NoRequiredParameters_IdVersionAuthorsAndDescription ( string scenarioName, string projectToBuild )
+        {
+            var solutionDir = Assets.GetScenarioDirectory(scenarioName);
+            var projectPath = Path.Combine(solutionDir, projectToBuild);
+
+            ImmutableDictionary<string, string> properties = MSBuild.Properties.Default
+                .Add("Id", "NoRequiredParameters")
+                .Add("Version", "1.0.0")
+                .Add("Authors", "authors")
+                .Add("Description", "description");
+
+            var result = await MSBuild.ExecuteAsync(projectPath, "GenerateNuSpec", properties);
+            result.AssertSuccessfulBuild();
+        }
+
+        [Theory]
+        [InlineData("Task_GenerateNuSpec_NoRequiredParameters", @"NuGetPackage\NuGetPackage.nuproj", @"NuGetPackage\template.nuspec")]
+        public async System.Threading.Tasks.Task Task_GenerateNuSpec_NoRequiredParameters_FromTemplate ( string scenarioName, string projectToBuild, string templateFile )
+        {
+            var solutionDir = Assets.GetScenarioDirectory(scenarioName);
+            var projectPath = Path.Combine(solutionDir, projectToBuild);
+            var templatePath = Path.Combine(solutionDir, templateFile);
+
+
+            ImmutableDictionary<string, string> properties = MSBuild.Properties.Default
+                .Add("NuSpecTemplate", templatePath);
+
+            // load the template manifest so we can compare it later..
+            Manifest templateManifest;
+            using (var inputStream = File.OpenRead(templatePath))
+                templateManifest = Manifest.ReadFrom(inputStream, false);
+
+            var result = await MSBuild.ExecuteAsync(projectPath, "GenerateNuSpec", properties);
+            result.AssertSuccessfulBuild();
+
+            Manifest resultManifest;
+            using (var inputStream = File.OpenRead(result.Result.ProjectStateAfterBuild.GetPropertyValue("NuSpecPath")))
+                resultManifest = Manifest.ReadFrom(inputStream, false);
+
+            Assert.Equal(templateManifest.Metadata.Id, resultManifest.Metadata.Id);
+            Assert.Equal(templateManifest.Metadata.Version, resultManifest.Metadata.Version);
+            Assert.Equal(templateManifest.Metadata.Authors, resultManifest.Metadata.Authors);
+            Assert.Equal(templateManifest.Metadata.Description, resultManifest.Metadata.Description);
         }
     }
 }

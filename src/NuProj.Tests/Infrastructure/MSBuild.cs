@@ -52,7 +52,7 @@ namespace NuProj.Tests.Infrastructure
                 buildManager.BeginBuild(parameters);
                 try
                 {
-                    var requestData = new BuildRequestData(projectPath, properties ?? Properties.Default, null, targetsToBuild, null);
+                    var requestData = new BuildRequestData(projectPath, properties ?? Properties.Default, null, targetsToBuild, null, BuildRequestDataFlags.ProvideProjectStateAfterBuild);
                     var submission = buildManager.PendBuildRequest(requestData);
                     result = await submission.ExecuteAsync();
                 }
@@ -172,6 +172,12 @@ namespace NuProj.Tests.Infrastructure
             {
                 Assert.False(ErrorEvents.Any(), ErrorEvents.Select(e => e.Message).FirstOrDefault());
                 Assert.Equal(BuildResultCode.Success, Result.OverallResult);
+            }
+
+            public void AssertError(string errorText, StringComparison comparisonType = StringComparison.OrdinalIgnoreCase)
+            {
+                Assert.True(ErrorEvents.Where(e => e.Message.IndexOf(errorText, comparisonType) >= 0).Any());
+                Assert.Equal(BuildResultCode.Failure, Result.OverallResult);
             }
         }
 

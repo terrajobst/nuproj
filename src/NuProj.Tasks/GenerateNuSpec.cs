@@ -21,22 +21,16 @@ namespace NuProj.Tasks
 
         public string MinClientVersion { get; set; }
 
-        [Required]
         public string Id { get; set; }
 
-        [Required]
         public string Version { get; set; }
 
-        [Required]
         public string Title { get; set; }
 
-        [Required]
         public string Authors { get; set; }
 
-        [Required]
         public string Owners { get; set; }
 
-        [Required]
         public string Description { get; set; }
 
         public string ReleaseNotes { get; set; }
