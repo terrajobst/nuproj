@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
+using Xunit;
 
 namespace NuProj.Tests.Infrastructure
 {
@@ -50,7 +52,15 @@ namespace NuProj.Tests.Infrastructure
 
         public static string GetNuPkgPath(this Project nuProj)
         {
-            return nuProj.GetPropertyValue("NuGetOutputPath");
+            System.Collections.Generic.IDictionary<string, Microsoft.Build.Execution.TargetResult> targetResults;
+
+            var projectInstance = nuProj.CreateProjectInstance();
+            Assert.True(projectInstance.Build(new string[] { "GetPackageOutputs" },
+                                       null,
+                                       null,
+                                       out targetResults));
+
+            return targetResults.First().Value.Items.First().ItemSpec;
         }
     }
 }
