@@ -36,6 +36,7 @@ There is also a Visual Studio extension which you find under http://bit.ly/NuPro
   <ItemGroup>
     <ProjectReference Include="..\NuProj.Tasks\NuProj.Tasks.csproj">
       <PackageDirectory>Tools</PackageDirectory>
+      <TargetFramework></TargetFramework>
     </ProjectReference>
   </ItemGroup>
   

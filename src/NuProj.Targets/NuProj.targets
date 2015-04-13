@@ -134,13 +134,13 @@
   <PropertyGroup>
     <ProjectProperties>
       Configuration=$(Configuration);
-      Platform=$(Platform)
+      Platform=$(Platform);
     </ProjectProperties>
 
     <!-- Use 'Microsoft.Common.NuProj.targets' if it's in same directory as this script. 
          For example when using NuProj NuGet package instead of VS integration.-->
     <ProjectProperties Condition="Exists('$(MSBuildThisFileDirectory)Microsoft.Common.NuProj.targets') And !$(CustomAfterMicrosoftCommonTargets.Contains('Microsoft.Common.NuProj.targets'))">
-      $(ProjectProperties);CustomAfterMicrosoftCommonTargets=$(MSBuildThisFileDirectory)Microsoft.Common.NuProj.targets
+      $(ProjectProperties)CustomAfterMicrosoftCommonTargets=$(MSBuildThisFileDirectory)Microsoft.Common.NuProj.targets
     </ProjectProperties>
   </PropertyGroup>
 
@@ -153,7 +153,7 @@
   <ItemDefinitionGroup>
     <ProjectReference>
       <PackageDirectory>Lib</PackageDirectory>
-      <TargetFramework></TargetFramework>
+      <TargetFramework>TargetFrameworkMoniker</TargetFramework>
     </ProjectReference>
   </ItemDefinitionGroup>
 
@@ -352,10 +352,15 @@
 
         <!-- In order to package the the files in the correct folder in the
              NuGet package we need need to know the target framework moniker. -->
+      
+        <PropertyGroup>
+          <_NonNuProjProjectTargetFrameworkMoniker></_NonNuProjProjectTargetFrameworkMoniker>
+        </PropertyGroup>
 
         <MSBuild Targets="GetTargetFrameworkMoniker"
                  Projects="@(_NonNuProjProjectReference)"
-                 Properties="$(ProjectProperties)">
+                 Properties="$(ProjectProperties)"
+                 Condition="'@(_NonNuProjProjectReference->'%(TargetFramework)')' == 'TargetFrameworkMoniker'">
           
             <Output TaskParameter="TargetOutputs"
                     PropertyName="_NonNuProjProjectTargetFrameworkMoniker" />
