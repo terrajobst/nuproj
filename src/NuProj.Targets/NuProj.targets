@@ -333,7 +333,7 @@
 
         <MSBuild Targets="GetTargetPath"
                  Projects="@(_NonNuProjProjectReference)"
-                 Properties="$(ProjectProperties)">
+                 Properties="$(ProjectProperties);SkipValidatePackageReferences=true">
             <Output TaskParameter="TargetOutputs"
                     PropertyName="_NonNuProjProjectTargetPath" />
         </MSBuild>
