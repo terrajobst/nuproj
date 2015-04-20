@@ -54,14 +54,14 @@ namespace NuProj.Tests
         }
 
         [Theory]
-        [InlineData("PackageToBuild", new[] { @"build\Tool.dll" }, new string[0])]
+        [InlineData("PackageToBuild", new[] { @"build\net45\Tool.dll" }, new string[0])]
         [InlineData("PackageToLib", new[] { @"lib\net45\Tool.dll" }, new string[0])]
         [InlineData("PackageToRoot", new[] { @"Tool.dll", @"Tool.pdb" }, new string[0])]
-        [InlineData("PackageToTools", new[] { @"tools\Tool.dll" }, new string[0])]
-        [InlineData("PackageDependencyToTools", new[] { @"tools\Tool.dll" }, new[] { "PackageToTools (>= 1.0.0)" })]
-        [InlineData("PackageClosureToTools", new[] { @"tools\Tool.dll", @"tools\ToolWithClosure.dll" }, new string[0])]
+        [InlineData("PackageToTools", new[] { @"tools\net45\Tool.dll" }, new string[0])]
+        [InlineData("PackageDependencyToTools", new[] { @"tools\net45\Tool.dll" }, new[] { "PackageToTools (>= 1.0.0)" })]
+        [InlineData("PackageClosureToTools", new[] { @"tools\net45\Tool.dll", @"tools\net45\ToolWithClosure.dll" }, new string[0])]
         [InlineData("PackageToContent", new[] { @"content\Tool.dll", @"content\Tool.pdb" }, new string[0])]
-        [InlineData("PackageNuGetDependencyToTools", new[] { @"tools\System.Collections.Immutable.dll", @"tools\ToolWithDependency.dll" }, new string[0])]
+        [InlineData("PackageNuGetDependencyToTools", new[] { @"tools\net451\System.Collections.Immutable.dll", @"tools\net451\ToolWithDependency.dll" }, new string[0])]
         public async Task References_PackageDirectory_ToolIsPackaged(
             string packageId, 
             string[] expectedFiles, 
@@ -74,6 +74,18 @@ namespace NuProj.Tests
             expectedDependencies = expectedDependencies.OrderBy(x => x).ToArray();
             Assert.Equal(expectedFiles, actualFiles);
             Assert.Equal(expectedDependencies, actualDependencies);
+        }
+
+        [Theory]
+        [InlineData("TargetFramework45", new[] { @"lib\net45\Library.dll" })]
+        [InlineData("TargetFrameworkAny", new[] { @"lib\Library.dll" })]
+        [InlineData("TargetFrameworkMoniker", new[] { @"lib\net40\Library.dll" })]
+        public async Task References_TargetFramework_UsesMetadata(string packageId, string[] expectedFiles)
+        {
+            var package = await Scenario.RestoreAndBuildSinglePackageAsync("References_TargetFramework", packageId);
+            var actualFiles = package.GetFiles().Select(f => f.Path).OrderBy(x => x);
+            expectedFiles = expectedFiles.OrderBy(x => x).ToArray();
+            Assert.Equal(expectedFiles, actualFiles);
         }
     }
 }

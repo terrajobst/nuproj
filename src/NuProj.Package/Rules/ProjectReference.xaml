@@ -22,6 +22,36 @@
                   Description="The directory to receive the output of this reference.">
         <EnumValue Name="Lib" DisplayName="lib" />
         <EnumValue Name="Tools" DisplayName="tools" />
+        <EnumValue Name="Build" DisplayName="build" />
+    </EnumProperty>
+
+    <EnumProperty Name="TargetFramework"
+                  DisplayName="Target framework"
+                  Category="Advanced"
+                  Description="The subdirectory specifying target framework to receive the output of this reference.">
+        <EnumValue Name="TargetFrameworkMoniker" DisplayName="Detect Target Framework" Description="Resolves target framework from referenced project." />
+        <EnumValue Name="" DisplayName="Any Framework" Description="Does not create target framework subdirectory." />
+        <EnumValue Name="net10" DisplayName=".Net 1.0" />
+        <EnumValue Name="net11" DisplayName=".Net 1.1" />
+        <EnumValue Name="net20" DisplayName=".Net 2.0" />
+        <EnumValue Name="net30" DisplayName=".Net 3.0" />
+        <EnumValue Name="net35" DisplayName=".Net 3.5" />
+        <EnumValue Name="net40" DisplayName=".Net 4.0" />
+        <EnumValue Name="net40-full" DisplayName=".Net 4.0 (Full)" />
+        <EnumValue Name="net40-client" DisplayName=".Net 4.0 (Client)" />
+        <EnumValue Name="net40-cf" DisplayName=".Net 4.0 (Compact)" />
+        <EnumValue Name="net45" DisplayName=".Net 4.5" />
+        <EnumValue Name="net451" DisplayName=".Net 4.5.1" />
+        <EnumValue Name="net452" DisplayName=".Net 4.5.2" />
+        <EnumValue Name="sl1" DisplayName="Silverlight 1.0" />
+        <EnumValue Name="sl2" DisplayName="Silverlight 2.0" />
+        <EnumValue Name="sl3" DisplayName="Silverlight 3.0" />
+        <EnumValue Name="sl4" DisplayName="Silverlight 4.0" />
+        <EnumValue Name="sl5" DisplayName="Silverlight 5.0" />
+        <EnumValue Name="wp7" DisplayName="Windows Phone 7.0" />
+        <EnumValue Name="wp71" DisplayName="Windows Phone 7.1" />
+        <EnumValue Name="wpa" DisplayName="Windows Phone App" />
+        <EnumValue Name="windows8" DisplayName="Windows Store App" />
     </EnumProperty>
 
     <BoolProperty Name="ReferenceOutputAssembly"

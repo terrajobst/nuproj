@@ -139,6 +139,19 @@ put into `lib` folder. The package directory can be controlled by using
 </ItemGroup>
 ```
 
+Target framework for referenced project will be resolved from project reference 
+itself. You can override this behavior using `TargetFramework` metadata.
+
+```xml
+<ItemGroup>
+  <!-- This will generate "tools\NuProj.Tasks.dll" target path. -->
+  <ProjectReference Include="..\NuProj.Tasks\NuProj.Tasks.csproj">
+    <PackageDirectory>Tools</PackageDirectory>
+    <TargetFramework></TargetFramework>
+  </ProjectReference>
+</ItemGroup>
+```
+
 You can also reference other NuProj projects to generate package dependencies.
 Content of `Lib` directory of `Dependency` package will be removed from `Lib` 
 directory of dependent package. `Dependency` package will be added as a NuGet 

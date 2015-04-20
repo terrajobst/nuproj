@@ -33,9 +33,19 @@ namespace NuProj.Tasks
         private static ITaskItem ConvertToPackageFile(ITaskItem output)
         {
             var fileName = output.ItemSpec;
-            var frameworkNameMoniker = output.GetTargetFrameworkMoniker();
+            var targetFramework = "";
+            if (output.UseTargetFrameworkMoniker())
+            {
+                var frameworkNameMoniker = output.GetTargetFrameworkMoniker();
+                targetFramework = frameworkNameMoniker.GetShortFrameworkName();
+            }
+            else
+            {
+                var frameworkName = output.GetTargetFramework();
+                targetFramework = frameworkName.GetShortFrameworkName();
+            }
+
             var packageDirectory = output.GetPackageDirectory();
-            var targetFramework = frameworkNameMoniker.GetShortFrameworkName();
             var metadata = output.CloneCustomMetadata();
             metadata[Metadata.TargetFramework] = targetFramework;
             metadata[Metadata.PackageDirectory] = packageDirectory.ToString();

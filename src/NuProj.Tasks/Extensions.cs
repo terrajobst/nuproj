@@ -14,7 +14,7 @@ namespace NuProj.Tasks
 {
     public static class Extensions
     {
-        private static readonly FrameworkName NullFramework = new FrameworkName("Null,Version=v1.0");
+        private static readonly FrameworkName AnyFramework = new FrameworkName("Any,Version=v1.0");
 
         public static bool GetBoolean(this ITaskItem taskItem, string metadataName, bool defaultValue = false)
         {
@@ -28,16 +28,22 @@ namespace NuProj.Tasks
         {
             FrameworkName result = null;
             var metadataValue = taskItem.GetMetadata(Metadata.TargetFramework);
-            if (!string.IsNullOrEmpty(metadataValue))
+            if (string.IsNullOrEmpty(metadataValue))
             {
-                result = VersionUtility.ParseFrameworkName(metadataValue);
+                result = AnyFramework;
             }
             else
             {
-                result = NullFramework;
+                result = VersionUtility.ParseFrameworkName(metadataValue);
             }
 
             return result;
+        }
+
+        public static bool UseTargetFrameworkMoniker(this ITaskItem taskItem)
+        {
+            var metadataValue = taskItem.GetMetadata(Metadata.TargetFramework);
+            return string.Equals(metadataValue, Metadata.TargetFrameworkMoniker, StringComparison.OrdinalIgnoreCase);
         }
 
         public static FrameworkName GetTargetFrameworkMoniker(this ITaskItem taskItem)
@@ -50,7 +56,7 @@ namespace NuProj.Tasks
             }
             else
             {
-                result = NullFramework;
+                result = AnyFramework;
             }
 
             return result;
@@ -93,7 +99,7 @@ namespace NuProj.Tasks
 
         public static string GetShortFrameworkName(this FrameworkName frameworkName)
         {
-            if (frameworkName == null || frameworkName == NullFramework)
+            if (frameworkName == null || frameworkName == AnyFramework)
             {
                 return null;
             }
@@ -165,16 +171,21 @@ namespace NuProj.Tasks
                 case PackageDirectory.Root:
                     return fileName;
                 case PackageDirectory.Content:
-                    return Path.Combine(Constants.ContentDirectory, fileName);
+                    return Combine(Constants.ContentDirectory, fileName);
                 case PackageDirectory.Build:
-                    return Path.Combine(Constants.BuildDirectory, fileName);
+                    return Combine(Constants.BuildDirectory, targetFramework, fileName);
                 case PackageDirectory.Lib:
-                    return Path.Combine(Constants.LibDirectory, targetFramework, fileName);
+                    return Combine(Constants.LibDirectory, targetFramework, fileName);
                 case PackageDirectory.Tools:
-                    return Path.Combine(Constants.ToolsDirectory, fileName);
+                    return Combine(Constants.ToolsDirectory, targetFramework, fileName);
                 default:
                     return fileName;
             }
+        }
+
+        private static string Combine(params string[] paths)
+        {
+            return Path.Combine(paths.Where(x => !string.IsNullOrEmpty(x)).ToArray());
         }
     }
 }
