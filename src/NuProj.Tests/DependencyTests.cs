@@ -121,6 +121,24 @@ namespace NuProj.Tests
             Assert.Equal(dependencySet, package.DependencySets, PackageDependencySetComparer.Instance);
         }
 
+        [Fact]
+        public async Task Dependency_SpecifiedTargetFramework_IsTakenIntoAccount()
+        {
+            var package = await Scenario.RestoreAndBuildSinglePackageAsync(packageId: "Dependent.nuget");
+            var dependencySet = new[]{
+                new PackageDependencySet(VersionUtility.ParseFrameworkName("sl50"), new List<PackageDependency>
+                    {
+                        new PackageDependency("Dependency.nuget", new VersionSpec
+                            {
+                                IsMinInclusive = true,
+                                MinVersion = new SemanticVersion("1.0.0")
+                            })
+                    })
+            };
+
+            Assert.Equal(dependencySet, package.DependencySets, PackageDependencySetComparer.Instance);
+        }
+
         [Theory]
         [InlineData("Build")]
         [InlineData("Clean")]
