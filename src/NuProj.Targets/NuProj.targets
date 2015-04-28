@@ -737,27 +737,27 @@
           DependsOnTargets="GetNuProjPackageDependencies;GetFiles">
 
     <ItemGroup>
-        <!-- Clear temporary items. -->
-        <_NuProjDependency Remove="@(_NuProjDependency)" />
-        <_FilteredNuProjDependency Remove="@(_FilteredNuProjDependency)" />
-        <_DependencyFile Remove="@(_DependencyFile)" />
+      <!-- Clear temporary items. -->
+      <_NuProjDependency Remove="@(_NuProjDependency)" />
+      <_FilteredNuProjDependency Remove="@(_FilteredNuProjDependency)" />
+      <_DependencyFile Remove="@(_DependencyFile)" />
 
-        <!-- Get files that are library and have assigned target framework (so no debug symbols files). -->
-        <_DependencyFile Include="@(File)"
-                         Condition="'%(File.PackageDirectory)' == 'Lib' 
-                         and '%(File.TargetFramework)' != '' 
-                         and '%(File.NuProjPackageId)' == '%(NuProjDependency.Identity)'"/>
+      <!-- Get files that are library and have assigned target framework (so no debug symbols files). -->
+      <_DependencyFile Include="@(File)"
+                       Condition="'%(File.PackageDirectory)' == 'Lib' 
+                       and '%(File.TargetFramework)' != '' 
+                       and '%(File.NuProjPackageId)' == '%(NuProjDependency.Identity)'"/>
 
-        <_FilteredNuProjDependency Include="@(NuProjDependency)"
+      <_FilteredNuProjDependency Include="@(NuProjDependency)"
                                    Condition=" '%(TargetFramework)' == '' " />
 
-        <_NuProjDependency Include="@(_FilteredNuProjDependency)">
-            <TargetFramework>%(_DependencyFile.TargetFramework)</TargetFramework>
-        </_NuProjDependency>
+      <_NuProjDependency Include="@(_FilteredNuProjDependency)">
+        <TargetFramework>%(_DependencyFile.TargetFramework)</TargetFramework>
+      </_NuProjDependency>
 
-        <!-- Replace dependency item with ones that have target framework. -->
-        <NuProjDependency Remove="@(_NuProjDependency)" />
-        <NuProjDependency Include="@(_NuProjDependency)" />
+      <!-- Replace dependency item with ones that have target framework. -->
+      <NuProjDependency Remove="@(_NuProjDependency)" />
+      <NuProjDependency Include="@(_NuProjDependency)" />
     </ItemGroup>
 
   </Target>
