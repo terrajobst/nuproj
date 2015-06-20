@@ -81,65 +81,61 @@ namespace NuProj.Tests
         [Fact]
         public async Task Dependency_Versions_AreAggregated()
         {
-            var package = await Scenario.RestoreAndBuildSinglePackageAsync();
-            var expectedVersions = new[]
+            var expectedDepndencies = new[] 
             {
-                    "1.1.20-beta",
-                    "1.0.12-alpha",
-                    "[0.2, 1.0]",
-                    "[0.2, 1.0]",
+                "Microsoft.Bcl.Immutable (>= 1.1.20-beta) (net45)",
+                "Microsoft.Bcl.Metadata (>= 1.0.12-alpha) (net45)",
+                "Microsoft.CodeAnalysis.Common (>= 0.2 && <= 1.0) (net45)",
+                "Microsoft.CodeAnalysis.CSharp (>= 0.2 && <= 1.0) (net45)",
             };
-            var versionSpecs = package.DependencySets
-                .SelectMany(x => x.Dependencies)
-                .Select(x => x.VersionSpec.ToString());
-            Assert.Equal(expectedVersions, versionSpecs);
+
+            var package = await Scenario.RestoreAndBuildSinglePackageAsync();
+            var actualDependencies = package.DependencySets.Flatten();
+
+            Assert.Equal(expectedDepndencies, actualDependencies);
         }
 
         [Fact]
         public async Task Dependency_MultipleFrameworks_AreResolved()
         {
-            var package = await Scenario.RestoreAndBuildSinglePackageAsync(packageId: "Dependent.nuget");
-            var dependencySet = new []{
-                new PackageDependencySet(VersionUtility.ParseFrameworkName("net40"), new List<PackageDependency>
-                    {
-                        new PackageDependency("Dependency.nuget", new VersionSpec
-                            {
-                                IsMinInclusive = true,
-                                MinVersion = new SemanticVersion("1.0.0")
-                            })
-                    }),
-                new PackageDependencySet(VersionUtility.ParseFrameworkName("net45"), new List<PackageDependency>
-                    {
-                        new PackageDependency("Dependency.nuget", new VersionSpec
-                            {
-                                IsMinInclusive = true,
-                                MinVersion = new SemanticVersion("1.0.0")
-                            })
-                    }),
+            var expectedDepndencies = new[]
+            {
+                "Dependency.nuget (>= 1.0.0) (net40)",
+                "Dependency.nuget (>= 1.0.0) (net45)",
             };
 
-            Assert.Equal(dependencySet, package.DependencySets, PackageDependencySetComparer.Instance);
+            var package = await Scenario.RestoreAndBuildSinglePackageAsync(packageId: "Dependent.nuget");
+            var actualDependencies = package.DependencySets.Flatten();
+
+            Assert.Equal(expectedDepndencies, actualDependencies);
         }
 
         [Fact]
         public async Task Dependency_OmitDevelopmentDependencies()
         {
-            var package = await Scenario.RestoreAndBuildSinglePackageAsync();
+            var expectedDepndencies = new[] { "Microsoft.Tpl.Dataflow (>= 4.5.24) (net452)" };
 
-            // We verify that one package dependency is present that should be transitive,
-            // and that a DevelopmentDependency=true package (StyleCop.Analyzers) is NOT present.
-            var dependencySet = new[]{
-                new PackageDependencySet(VersionUtility.ParseFrameworkName("net452"), new List<PackageDependency>
-                    {
-                        new PackageDependency("Microsoft.Tpl.Dataflow", new VersionSpec
-                            {
-                                IsMinInclusive = true,
-                                MinVersion = new SemanticVersion("4.5.24")
-                            }),
-                    }),
+            var package = await Scenario.RestoreAndBuildSinglePackageAsync();
+            var actualDepedndencies = package.DependencySets.Flatten();
+
+            Assert.Equal(expectedDepndencies, actualDepedndencies);
+        }
+
+        [Fact]
+        public async Task Dependency_NuProjDependencyVersion()
+        {
+            var expectedDependencies = new[]
+            {
+                "DefaultVersion (>= 1.0.0)",
+                "ExactVersion (= 1.0.0)",
+                "MaxVersion", // as per docs, empty = latest version
+                "RangeVersion (>= 1.0.0 && < 2.0)",
             };
 
-            Assert.Equal(dependencySet, package.DependencySets, PackageDependencySetComparer.Instance);
+            var package = await Scenario.RestoreAndBuildSinglePackageAsync(packageId: "Dependent");
+            var actualDependencies = package.DependencySets.Flatten();
+
+            Assert.Equal(expectedDependencies, actualDependencies);
         }
 
         [Theory]
