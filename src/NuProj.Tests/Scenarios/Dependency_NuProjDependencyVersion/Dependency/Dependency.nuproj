@@ -11,20 +11,20 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>7bf541a2-f162-49fd-9670-f33b11306778</ProjectGuid>
+    <ProjectGuid>fb94189d-d086-4652-bac6-681f1c0d014f</ProjectGuid>
   </PropertyGroup>
   <PropertyGroup>
     <NuProjPath Condition=" '$(NuProjPath)' == '' ">$(MSBuildExtensionsPath)\NuProj\</NuProjPath>
   </PropertyGroup>
   <Import Project="$(NuProjPath)\NuProj.props" Condition="Exists('$(NuProjPath)\NuProj.props')" />
   <PropertyGroup Label="Configuration">
-    <Id>ExactVersion</Id>
-    <Version>1.0.0</Version>
-    <Title>ExactVersion</Title>
+    <Id>Dependency</Id>
+    <Version>$(DependencyVersion)</Version>
+    <Title>Dependency</Title>
     <Authors>kovalikp</Authors>
     <Owners>kovalikp</Owners>
-    <Summary>ExactVersion</Summary>
-    <Description>ExactVersion</Description>
+    <Summary>Dependency</Summary>
+    <Description>Dependency</Description>
     <ReleaseNotes>
     </ReleaseNotes>
     <ProjectUrl>
@@ -32,7 +32,7 @@
     <LicenseUrl>
     </LicenseUrl>
     <Copyright>Copyright © kovalikp</Copyright>
-    <Tags>ExactVersion</Tags>
+    <Tags>Dependency</Tags>
   </PropertyGroup>
   <ItemGroup>
     <Content Include="Readme.txt" />

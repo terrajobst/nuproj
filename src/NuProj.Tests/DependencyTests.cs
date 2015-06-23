@@ -121,18 +121,20 @@ namespace NuProj.Tests
             Assert.Equal(expectedDepndencies, actualDepedndencies);
         }
 
-        [Fact]
-        public async Task Dependency_NuProjDependencyVersion()
+        [Theory]
+        [InlineData("1.0.0", "", "Dependency")] // as per docs, empty = latest version
+        [InlineData("1.0.0", "*", "Dependency (>= 1.0.0)")]
+        [InlineData("1.5.0", "[*]", "Dependency (= 1.5.0)")]
+        [InlineData("1.0.0", "[*,2.0.0)", "Dependency (>= 1.0.0 && < 2.0.0)")]
+        public async Task Dependency_NuProjDependencyVersion(string version, string versionConstraint, string dependency)
         {
-            var expectedDependencies = new[]
-            {
-                "DefaultVersion (>= 1.0.0)",
-                "ExactVersion (= 1.0.0)",
-                "MaxVersion", // as per docs, empty = latest version
-                "RangeVersion (>= 1.0.0 && < 2.0)",
-            };
+            var expectedDependencies = new[] { dependency };
 
-            var package = await Scenario.RestoreAndBuildSinglePackageAsync(packageId: "Dependent");
+            var properies = MSBuild.Properties.Default
+                .Add("DependencyVersion", version)
+                .Add("DependencyVersionConstraint", versionConstraint);
+
+            var package = await Scenario.RestoreAndBuildSinglePackageAsync(packageId: "Dependent", properties: properies);
             var actualDependencies = package.DependencySets.Flatten();
 
             Assert.Equal(expectedDependencies, actualDependencies);

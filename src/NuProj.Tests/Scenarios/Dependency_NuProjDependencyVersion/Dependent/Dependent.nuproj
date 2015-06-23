@@ -38,15 +38,8 @@
     <Content Include="Readme.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DefaultVersion\DefaultVersion.nuproj" />
-    <ProjectReference Include="..\ExactVersion\ExactVersion.nuproj">
-      <VersionConstraint>[*]</VersionConstraint>
-    </ProjectReference>
-    <ProjectReference Include="..\MaxVersion\MaxVersion.nuproj">
-      <VersionConstraint></VersionConstraint>
-    </ProjectReference>
-    <ProjectReference Include="..\RangeVersion\RangeVersion.nuproj">
-      <VersionConstraint>[*,2.0)</VersionConstraint>
+    <ProjectReference Include="..\Dependency\Dependency.nuproj">
+	  <VersionConstraint>$(DependencyVersionConstraint)</VersionConstraint>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(NuProjPath)\NuProj.targets" />
