@@ -239,10 +239,15 @@
              Properties="$(ProjectProperties)"
              ContinueOnError="WarnAndContinue"/>
 
+    <PropertyGroup>
+      <!-- Inject the the Microsoft.Common.NuProj.targets in order to determine the closure of references -->
+      <_CustomAfterMicrosoftCommonTargetsString>;CustomAfterMicrosoftCommonTargets=$(MSBuildThisFileDirectory)\Microsoft.Common.NuProj.targets</_CustomAfterMicrosoftCommonTargetsString>
+    </PropertyGroup>
+
     <!-- Get closure of indirect references -->
     <MSBuild Projects="@(ProjectReference)"
              Targets="_NuProjGetProjectClosure"
-             Properties="$(ProjectProperties)"
+             Properties="$(ProjectProperties)$(_CustomAfterMicrosoftCommonTargetsString)"
              ContinueOnError="WarnAndContinue">
       <Output TaskParameter="TargetOutputs"
               ItemName="_ProjectReferenceClosureWithDuplicates" />

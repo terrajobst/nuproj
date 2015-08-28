@@ -11,6 +11,3 @@ you need to change the `NuProjPath` property in your .nuproj file:
 	<NuProjPath Condition=" '$(NuProjPath)' == '' ">..\packages\NuProj.[Version]\</NuProjPath>
 </PropertyGroup>
 ```
-
-Further more you need to install [NuGet.Common package that provides additional targets](http://www.nuget.org/packages/NuProj.Common).
-This package needs to be installed to all non-NuProj projects that are directly or indirectly referenced by NuProj project.
