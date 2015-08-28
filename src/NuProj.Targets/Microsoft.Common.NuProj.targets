@@ -25,11 +25,16 @@
             <_NuProjProjectReferenceClosureWithDuplicates Include="%(_MSBuildProjectReferenceExistent.FullPath)" />
         </ItemGroup>
 
+        <PropertyGroup>
+          <!-- Inject this target again, in order to determine the closure of references. -->
+          <_CustomAfterMicrosoftCommonTargetsString>;CustomAfterMicrosoftCommonTargets=$(MSBuildThisFileFullPath)</_CustomAfterMicrosoftCommonTargetsString>
+        </PropertyGroup>
+
         <!-- Include references from our references -->
         <MSBuild Projects="@(_MSBuildProjectReferenceExistent)"
                  Targets="_NuProjGetProjectClosure"
                  BuildInParallel="$(BuildInParallel)"
-                 Properties="%(_MSBuildProjectReferenceExistent.SetConfiguration); %(_MSBuildProjectReferenceExistent.SetPlatform)"
+                 Properties="%(_MSBuildProjectReferenceExistent.SetConfiguration); %(_MSBuildProjectReferenceExistent.SetPlatform)$(_CustomAfterMicrosoftCommonTargetsString)"
                  Condition="'%(_MSBuildProjectReferenceExistent.BuildReference)' == 'true' and '@(ProjectReferenceWithConfiguration)' != '' and '@(_MSBuildProjectReferenceExistent)' != ''"
                  ContinueOnError="WarnAndContinue"
                  RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">

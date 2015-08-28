@@ -16,16 +16,6 @@
           <Directory Id="INSTALLDIR" Name="NuProj">
               <Directory Id="Rules" Name="Rules" />
           </Directory>
-          <Directory Id="MSBuild120" Name="12.0">
-            <Directory Id="Microsoft.Common.Targets.120" Name="Microsoft.Common.Targets">
-              <Directory Id="Microsoft.Common.Targets.ImportAfter.120" Name="ImportAfter" />
-            </Directory>
-          </Directory>
-          <Directory Id="MSBuild140" Name="14.0">
-            <Directory Id="Microsoft.Common.Targets.140" Name="Microsoft.Common.Targets">
-              <Directory Id="Microsoft.Common.Targets.ImportAfter.140" Name="ImportAfter" />
-            </Directory>
-          </Directory>
         </Directory>
       </Directory>
     </DirectoryRef>
@@ -40,13 +30,8 @@
       <Component Directory="INSTALLDIR">
         <File Source="$(var.NuProj.Tasks.TargetDir)Additional\NuProj.props" />
       </Component>
-      <Component Directory="Microsoft.Common.Targets.ImportAfter.120">
-        <File Id="Microsoft.Common.NuProj.targets.120"
-              Source="$(var.NuProj.Tasks.TargetDir)Additional\Microsoft.Common.NuProj.targets" />
-      </Component>
-      <Component Directory="Microsoft.Common.Targets.ImportAfter.140">
-        <File Id="Microsoft.Common.NuProj.targets.140" 
-              Source="$(var.NuProj.Tasks.TargetDir)Additional\Microsoft.Common.NuProj.targets" />
+      <Component Directory="INSTALLDIR">
+        <File Source="$(var.NuProj.Tasks.TargetDir)Additional\Microsoft.Common.NuProj.targets" />
       </Component>
       <Component Directory="INSTALLDIR">
         <File Source="$(var.NuProj.Tasks.TargetDir)NuProj.Tasks.dll" />
