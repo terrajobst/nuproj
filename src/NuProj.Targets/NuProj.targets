@@ -423,7 +423,7 @@
              get the directory name. -->
         <MSBuild Targets="GetTargetPath"
                  Projects="@(_NonNuProjProjectReference)"
-                 Properties="%(_NonNuProjProjectReference.SetConfiguration); %(_NonNuProjProjectReference.SetPlatform)">
+                 Properties="%(_NonNuProjProjectReference.SetConfiguration); %(_NonNuProjProjectReference.SetPlatform); SkipValidatePackageReferences=true">
             <Output TaskParameter="TargetOutputs"
                     PropertyName="_NonNuProjProjectTargetPath" />
         </MSBuild>
