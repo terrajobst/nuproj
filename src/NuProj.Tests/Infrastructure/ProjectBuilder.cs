@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-
+using System.Threading.Tasks;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 
@@ -48,9 +48,18 @@ namespace NuProj.Tests.Infrastructure
             Directory.Delete(projectDirectory, recursive: true);
         }
 
-        public static string GetNuPkgPath(this Project nuProj)
+        public static async Task<string> GetNuPkgPathAsync(this Project nuProj)
         {
-            return nuProj.GetPropertyValue("NuGetOutputPath");
+            var result = await MSBuild.ExecuteAsync(nuProj.CreateProjectInstance(), "EstablishNuGetPaths");
+            AssertNu.SuccessfulBuild(result);
+            return result.Result.ProjectStateAfterBuild.GetPropertyValue("NuGetOutputPath");
+        }
+
+        public static async Task<string> GetNuSpecPathAsync(this Project nuProj)
+        {
+            var result = await MSBuild.ExecuteAsync(nuProj.CreateProjectInstance(), "EstablishNuGetPaths");
+            AssertNu.SuccessfulBuild(result);
+            return result.Result.ProjectStateAfterBuild.GetPropertyValue("NuSpecPath");
         }
     }
 }

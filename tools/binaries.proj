@@ -5,7 +5,7 @@
 
   <PropertyGroup>
     <BuildInParallel Condition="'$(BuildInParallel)' == ''">True</BuildInParallel>
-    <WixToolPath>$(SourceDir)\packages\WiX.Toolset.3.8.1128.0\tools\wix\</WixToolPath>
+    <WixToolPath>$(SourceDir)\packages\WiX.Toolset.3.9.1208.0\tools\wix\</WixToolPath>
     <WixTargetsPath>$(WixToolPath)Wix.targets</WixTargetsPath>
     <WixTasksPath>$(WixToolPath)wixtasks.dll</WixTasksPath>
   </PropertyGroup>

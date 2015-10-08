@@ -1,0 +1,27 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FF286327-C783-4F7A-AB73-9BCBAD0D4460}") = "Package", "Package\Package.nuproj", "{0B98679C-6418-47FC-A10B-69AFDB23B3A4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Debug_x64", "Debug_x64\Debug_x64.csproj", "{AA3E7C1E-311B-4B67-B450-B476105E2234}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Release_x86", "Release_x86\Release_x86.csproj", "{2D609FC5-1458-46D0-9CE4-7EC3A95F7B1E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Mixed|Mixed Platforms = Mixed|Mixed Platforms
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0B98679C-6418-47FC-A10B-69AFDB23B3A4}.Mixed|Mixed Platforms.ActiveCfg = Mixed|Any CPU
+		{0B98679C-6418-47FC-A10B-69AFDB23B3A4}.Mixed|Mixed Platforms.Build.0 = Mixed|Any CPU
+		{AA3E7C1E-311B-4B67-B450-B476105E2234}.Mixed|Mixed Platforms.ActiveCfg = Debug|x64
+		{AA3E7C1E-311B-4B67-B450-B476105E2234}.Mixed|Mixed Platforms.Build.0 = Debug|x64
+		{2D609FC5-1458-46D0-9CE4-7EC3A95F7B1E}.Mixed|Mixed Platforms.ActiveCfg = Release|x86
+		{2D609FC5-1458-46D0-9CE4-7EC3A95F7B1E}.Mixed|Mixed Platforms.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

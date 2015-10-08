@@ -4,15 +4,18 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <OutDir Condition=" '$(OutDir)' == ''" >$(MSBuildProjectDirectory)\bin\$(Configuration)\</OutDir>
-    <IntermediateOutputPath Condition=" '$(IntermediateOutputPath)' == '' ">$(MSBuildProjectDirectory)\obj\$(Configuration)\</IntermediateOutputPath>
+  </PropertyGroup>
+  
+  <PropertyGroup>
     <NoPackageAnalysis Condition=" '$(NoPackageAnalysis)' == '' ">False</NoPackageAnalysis>
     <NoDefaultExcludes Condition=" '$(NoDefaultExcludes)' == '' ">False</NoDefaultExcludes>
     <GenerateSymbolPackage Condition=" '$(GenerateSymbolPackage)' == '' ">True</GenerateSymbolPackage>
     <EmbedSourceFiles Condition=" '$(EmbedSourceFiles)' == '' ">False</EmbedSourceFiles>
     <RequireLicenseAcceptance Condition=" '$(RequireLicenseAcceptance)' == '' ">False</RequireLicenseAcceptance>
     <DevelopmentDependency Condition=" '$(DevelopmentDependency)' == '' ">False</DevelopmentDependency>
-
+  </PropertyGroup>
+  
+  <PropertyGroup>
     <NuProjTasksPath Condition=" '$(NuProjTasksPath)' == '' ">$(MSBuildThisFileDirectory)NuProj.Tasks.dll</NuProjTasksPath>
     <NuProjToolPath Condition=" '$(NuProjToolPath)' == '' ">$(MSBuildThisFileDirectory)</NuProjToolPath>
     <NuGetToolPath Condition=" '$(NuGetToolPath)' == '' ">$(NuProjToolPath)</NuGetToolPath>

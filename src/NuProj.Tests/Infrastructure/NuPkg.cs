@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
+using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
 
 using NuGet;
@@ -11,9 +11,9 @@ namespace NuProj.Tests.Infrastructure
 {
     public static class NuPkg
     {
-        public static IPackage GetPackage(this Project nuProj)
+        public static async Task<IPackage> GetPackageAsync(this Project nuProj)
         {
-            var nuPkgPath = nuProj.GetNuPkgPath();
+            string nuPkgPath = await nuProj.GetNuPkgPathAsync();
             return GetPackage(nuPkgPath);
         }
 

@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <UsingTask TaskName="XamlRuleToCode" AssemblyFile="..\..\lib\Xaml2Cs.exe"/>
+
+    <PropertyGroup>
+        <PrepareResourceNamesDependsOn>
+            GenerateRuleSourceFromXaml;
+            $(PrepareResourceNamesDependsOn)
+        </PrepareResourceNamesDependsOn>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <XamlPropertyRule>
+            <DataAccess>IRule</DataAccess>
+            <Generator>MSBuild:GenerateRuleSourceFromXaml</Generator>
+            <OutputPath>$(IntermediateOutputPath)</OutputPath>
+            <Namespace>NuProj.ProjectSystem</Namespace>
+            <RuleInjectionClassName>NuProjProjectProperties</RuleInjectionClassName>
+            <RuleInjection>ProjectLevel</RuleInjection>
+            <CreateFallbackRule>false</CreateFallbackRule> 
+        </XamlPropertyRule>
+    </ItemDefinitionGroup>
+
+    <Target Name="GenerateRulePrep">
+        <ItemGroup>
+            <_XamlPropertyRuleSource Include="@(XamlPropertyRule->'$(IntermediateOutputPath)%(FileName)$(DefaultLanguageSourceExtension)')"/>
+            <Compile Include="@(_XamlPropertyRuleSource)">
+                <ExcludeFromStyleCop>true</ExcludeFromStyleCop>
+                <Visible>false</Visible>
+            </Compile>
+            <Clean Include="@(_XamlPropertyRuleSource)" />
+        </ItemGroup>
+        <Message Text="MSBuildThisFileFullPath: $(MSBuildThisFileFullPath)" Importance="high" />
+        <Message Text="MSBuildProjectFullPath: $(MSBuildProjectFullPath)" Importance="high" />
+        <Message Text="IntermediateOutputPath: $(IntermediateOutputPath)" Importance="high" />
+        <Message Text="@(Compile->'%(FullPath)', '%0a')" Importance="high" />
+    </Target>
+
+   <!-- The target needs to run so the task can populate the output items correctly. The task does an uptodate check on the files themselves-->
+   <Target Name="GenerateRuleSourceFromXaml"
+           DependsOnTargets="GenerateRulePrep" 
+           Condition="'@(XamlPropertyRule)' != ''">
+      <XamlRuleToCode
+         CreateFallbackRule="%(XamlPropertyRule.CreateFallbackRule)"
+         NamespaceName="%(XamlPropertyRule.Namespace)" 
+         RuleMissingError="%(XamlPropertyRule.RuleMissingError)"
+         PropertyMissingError="%(XamlPropertyRule.PropertyMissingError)"
+         Inputs="@(XamlPropertyRule)"
+         OutputDirectory="%(XamlPropertyRule.OutputPath)"
+         DataAccess="%(XamlPropertyRule.DataAccess)"
+         RuleBaseTypes="%(XamlPropertyRule.RuleBaseTypes)"
+         RuleNamePrefix="%(XamlPropertyRule.RuleNamePrefix)"
+         RuleInjectionClassName="%(XamlPropertyRule.RuleInjectionClassName)"
+         RuleInjection="%(XamlPropertyRule.RuleInjection)"
+         RuleInjectionContextName="%(XamlPropertyRule.RuleInjectionCatalog)"
+         ProjectPropertiesContext="%(XamlPropertyRule.ProjectPropertiesContext)">
+         <Output TaskParameter="ResourcesToEmbed" ItemName="EmbeddedResource"/>
+      </XamlRuleToCode>
+   </Target>
+
+</Project>

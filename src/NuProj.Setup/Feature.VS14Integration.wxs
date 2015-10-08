@@ -29,24 +29,24 @@
 
     <ComponentGroup Id="NuProjProjectSystem14" Directory="VS140.NuProj">
       <Component Id="VS14.extension.vsixmanifest" Guid="{FA626AFD-00EE-4DC3-8BBF-8D18E56F449E}">
-        <File Source="$(var.NuProj.Package.Dev14.TargetDir)extension.vsixmanifest" Id="VS14.extension.vsixmanifest" />
+        <File Source="$(var.NuProj.ProjectSystem.14.TargetDir)extension.vsixmanifest" Id="VS14.extension.vsixmanifest" />
       </Component>
       <Component Id="VS14.NuProj.icon" Guid="{9AC0CB17-A1DF-4263-9E48-942F9F8A21EA}">
         <File Source="$(var.SolutionDir)Icons\NuProj.ico" Id="VS14.NuProj.ico" />
       </Component>
       <Component Id="VS14.NuProj.ProjectSystem.dll" Guid="{63295F02-0E47-43AE-A787-FE6988EABEF6}">
-        <File Source="$(var.NuProj.Package.Dev14.TargetDir)NuProj.ProjectSystem.dll" Id="VS14.NuProj.ProjectSystem.dll" />
+        <File Source="$(var.NuProj.ProjectSystem.14.TargetDir)NuProj.ProjectSystem.14.dll" />
       </Component>
       <Component Id="VS14.NuProj.ProjectSystem.pdb" Guid="{20E27E4B-6407-4123-BFEF-9EFCC64DAFD8}">
-        <File Source="$(var.NuProj.Package.Dev14.TargetDir)NuProj.ProjectSystem.pdb" Id="VS14.NuProj.ProjectSystem.pdb"/>
+        <File Source="$(var.NuProj.ProjectSystem.14.TargetDir)NuProj.ProjectSystem.14.pdb" />
       </Component>
       <Component Id="VS14.NuProj.ProjectSystem.pkgdef" Guid="{A2C4D64B-6DF1-41A6-B223-7423B26B3A2F}">
-        <File Source="$(var.NuProj.Package.Dev14.TargetDir)NuProj.ProjectSystem.pkgdef" Id="VS14.NuProj.ProjectSystem.pkgdef" />
+        <File Source="$(var.NuProj.ProjectSystem.14.TargetDir)NuProj.ProjectSystem.14.pkgdef" />
       </Component>
     </ComponentGroup>
     <ComponentGroup Id="VS140.ProjectTemplates.NuGet" Directory="VS140.ProjectTemplates.NuGet">
       <Component Id="VS14.NuProj.zip" Guid="{3DADDB61-0EB4-4598-8554-E0BC94A6FC33}">
-        <File Source="$(var.NuProj.Package.Dev14.TargetDir)ProjectTemplates\NuGet\1033\NuProj.zip" Id="VS14.NuProj.zip" />
+        <File Source="$(var.NuProj.ProjectSystem.14.TargetDir)ProjectTemplates\NuGet\1033\NuProj.zip" Id="VS14.NuProj.zip" />
       </Component>
     </ComponentGroup>
   </Fragment>

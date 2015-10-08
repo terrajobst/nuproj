@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Build.Framework;
+using NuGet;
 using NuProj.Tests.Infrastructure;
 using Xunit;
 
@@ -11,6 +13,32 @@ namespace NuProj.Tests
 {
     public class ReferenceTests
     {
+        [Fact]
+        public async Task References_AssignProjectConfiguration()
+        {
+            var package = await Scenario.RestoreAndBuildSinglePackageAsync();
+            var scenarioDirectory = Assets.GetScenarioDirectory();
+            var nuspecFile = Path.Combine(scenarioDirectory, @"Package\obj\Mixed\Package.nuspec");
+            using (var stream = File.OpenRead(nuspecFile))
+            {
+                var manifest = Manifest.ReadFrom(stream, false);
+                var files = manifest.Files
+                    .Select(x => x.Source)
+                    .Select(x => x.Remove(0, scenarioDirectory.Length + 1))
+                    .OrderBy(x => x);
+
+                var expectedFileNames = new[]
+                {
+                    @"Debug_x64\bin\x64\Debug\Debug_x64.dll",
+                    @"Debug_x64\bin\x64\Debug\Debug_x64.pdb",
+                    @"Release_x86\bin\x86\Release\Release_x86.dll",
+                    @"Release_x86\bin\x86\Release\Release_x86.pdb",
+                };
+
+                Assert.Equal(expectedFileNames, files);
+            }
+        }
+
         [Fact]
         public async Task References_PackagedWithCopyLocal()
         {
@@ -34,7 +62,7 @@ namespace NuProj.Tests
                 @"lib\net451\net451.dll",
                 @"Readme.txt",
             };
-            var files = package.GetFiles().Select(f => f.Path);
+            var files = package.GetFiles().Select(f => f.Path).OrderBy(x => x);
             Assert.Equal(expectedFileNames, files);
         }
 
@@ -74,6 +102,22 @@ namespace NuProj.Tests
             expectedDependencies = expectedDependencies.OrderBy(x => x).ToArray();
             Assert.Equal(expectedFiles, actualFiles);
             Assert.Equal(expectedDependencies, actualDependencies);
+        }
+
+        [Fact]
+        public async Task References_PackageOutputGroups()
+        {
+            var package = await Scenario.RestoreAndBuildSinglePackageAsync();
+            var expectedFileNames = new[]
+            {
+                @"lib\net451\ClassLibrary.dll",
+                @"lib\net451\ClassLibrary.pdb",
+                @"lib\net451\ClassLibrary.xml",
+                @"lib\net451\de-DE\ClassLibrary.resources.dll",
+                @"lib\net451\sk-SK\ClassLibrary.resources.dll",
+            };
+            var files = package.GetFiles().Select(f => f.Path).OrderBy(x => x);
+            Assert.Equal(expectedFileNames, files);
         }
     }
 }

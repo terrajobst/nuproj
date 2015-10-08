@@ -34,6 +34,7 @@ namespace NuProj.Tests.Infrastructure
                 WorkingDirectory = path,
                 UseShellExecute = false,
                 WindowStyle = ProcessWindowStyle.Hidden,
+                CreateNoWindow = true,
                 RedirectStandardError = true,
                 RedirectStandardOutput = true
             };
@@ -66,12 +67,14 @@ namespace NuProj.Tests.Infrastructure
                         var message = String.Format("NuGet package restore failed.{0}{1}", Environment.NewLine, output);
                         tcs.SetException(new Exception(message));
                     }
-
-                    tcs.SetResult(process.ExitCode);
+                    else
+                    {
+                        tcs.SetResult(process.ExitCode);
+                    }
                 }
                 finally
                 {
-                    process.Dispose();                   
+                    process.Dispose();
                 }
             };
 

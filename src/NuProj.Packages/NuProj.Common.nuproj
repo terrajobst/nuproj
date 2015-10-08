@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|AnyCPU">
+      <Configuration>Debug</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|AnyCPU">
+      <Configuration>Release</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <NuProjPath Condition=" '$(NuProjPath)' == '' ">$(MSBuildExtensionsPath)\NuProj\</NuProjPath>
+  </PropertyGroup>
+  <Import Project="$(NuProjPath)\NuProj.props" Condition="Exists('$(NuProjPath)\NuProj.props')" />
+
+  <PropertyGroup>
+    <Id>NuProj.Common</Id>
+    <Title>NuProj.Common</Title>
+    <IconUrl>http://bit.ly/NuProjLogo64</IconUrl>
+    <Summary>NuProj provides an MSBuild-based approach to create NuGet packages (.nupkg). The build projects are called .nuproj files and are regular MSBuild projects.</Summary>
+    <Description>NuProj provides an MSBuild-based approach to create NuGet packages (.nupkg). The build projects are called .nuproj files and are regular MSBuild projects.
+
+This package provides additional MSBuild targets for non-NuProj projects. Install this package to projects that are being directly or indirectly referenced by your NuProj projects.
+
+There is also a Visual Studio extension which you find under http://bit.ly/NuProjVS.</Description>
+    <Tags>NuGet nupkg MSBuild NuProj</Tags>
+    <NoPackageAnalysis>True</NoPackageAnalysis>
+    <GenerateSymbolPackage>False</GenerateSymbolPackage>
+    <DevelopmentDependency>True</DevelopmentDependency>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <Content Include="$(BasePath)raw\Additional\Microsoft.Common.NuProj.targets">
+      <Link>build\NuProj.Common.targets</Link>
+    </Content>
+  </ItemGroup>
+
+  <Import Project="$(NuProjPath)\NuProj.targets" />
+
+</Project>

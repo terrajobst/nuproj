@@ -29,24 +29,24 @@
 
     <ComponentGroup Id="NuProjProjectSystem" Directory="VS120.NuProj">
       <Component Id="extension.vsixmanifest" Guid="c83627bd-59a4-4690-ad34-be24aa2840d4">
-        <File Source="$(var.NuProj.Package.TargetDir)extension.vsixmanifest" />
+        <File Source="$(var.NuProj.ProjectSystem.12.TargetDir)extension.vsixmanifest" />
       </Component>
       <Component Id="NuProj.icon" Guid="92c21537-291d-497c-bc09-46426b97fd2c">
         <File Source="$(var.SolutionDir)Icons\NuProj.ico" />
       </Component>
       <Component Id="NuProj.ProjectSystem.dll" Guid="98331398-3d3a-4608-89c6-b1736e657d40">
-        <File Source="$(var.NuProj.Package.TargetDir)NuProj.ProjectSystem.dll" />
+        <File Source="$(var.NuProj.ProjectSystem.12.TargetDir)NuProj.ProjectSystem.12.dll" />
       </Component>
       <Component Id="NuProj.ProjectSystem.pdb" Guid="76ec57aa-52c3-4ea1-b78e-e02a07ed98a0">
-        <File Source="$(var.NuProj.Package.TargetDir)NuProj.ProjectSystem.pdb" />
+        <File Source="$(var.NuProj.ProjectSystem.12.TargetDir)NuProj.ProjectSystem.12.pdb" />
       </Component>
       <Component Id="NuProj.ProjectSystem.pkgdef" Guid="22ce7497-964e-4b58-b24f-5bd2bf1b11ae">
-        <File Source="$(var.NuProj.Package.TargetDir)NuProj.ProjectSystem.pkgdef" />
+        <File Source="$(var.NuProj.ProjectSystem.12.TargetDir)NuProj.ProjectSystem.12.pkgdef" />
       </Component>
     </ComponentGroup>
     <ComponentGroup Id="VS120.ProjectTemplates.NuGet" Directory="VS120.ProjectTemplates.NuGet">
       <Component Id="NuProj.zip" Guid="cf18641b-418b-4e66-8abf-77b6209aaf76">
-        <File Source="$(var.NuProj.Package.TargetDir)ProjectTemplates\NuGet\127\NuProj.zip" />
+        <File Source="$(var.NuProj.ProjectSystem.12.TargetDir)ProjectTemplates\NuGet\127\NuProj.zip" />
       </Component>
     </ComponentGroup>
   </Fragment>

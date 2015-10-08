@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Xml;
 
 using Microsoft.Build.Construction;
@@ -27,7 +28,7 @@ namespace NuProj.Tests.Infrastructure
 
         public static string NuGetToolPath
         {
-            get { return Path.Combine(ProjectDirectory, @"src\packages\NuGet.CommandLine.2.8.5\tools"); }
+            get { return Path.Combine(ProjectDirectory, @"src\packages\NuGet.CommandLine.2.8.6\tools"); }
         }
 
         public static string NuGetExePath
@@ -45,12 +46,12 @@ namespace NuProj.Tests.Infrastructure
             get { return Path.Combine(ProjectDirectory, "src", "NuProj.Tests", "Scenarios"); }
         }
 
-        public static string GetScenarioDirectory(string scenarioName)
+        public static string GetScenarioDirectory([CallerMemberName] string scenarioName = null)
         {
             return Path.Combine(ScenariosDirectory, scenarioName);
         }
 
-        public static string GetScenarioSolutionPath(string scenarioName)
+        public static string GetScenarioSolutionPath([CallerMemberName] string scenarioName = null)
         {
             var solutioDirectory = GetScenarioDirectory(scenarioName);
             return Path.Combine(solutioDirectory, scenarioName + ".sln");

@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
 
 using Xunit;
@@ -30,9 +30,9 @@ namespace NuProj.Tests.Infrastructure
             Assert.NotNull(package.GetFile(packedFile));
         }
 
-        public static void PackageContainsContentItems(Project nuProj)
+        public static async Task PackageContainsContentItemsAsync(Project nuProj)
         {
-            var package = nuProj.GetPackage();
+            var package = await nuProj.GetPackageAsync();
             
             foreach (var contentItem in nuProj.GetItems("Content"))
             {

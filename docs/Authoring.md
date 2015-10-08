@@ -184,6 +184,6 @@ items will be added to files, framework assemblies, references or dependencies.
   <Authors>The World</Authors>
   <Owners>$(Authors)</Owners>
   <Description>Hello World</Description>
-  <NuSpecTemplate>HelloWorldTemplate.nupsec</NuSpecTemplate>
+  <NuSpecTemplate>HelloWorldTemplate.nuspec</NuSpecTemplate>
 </PropertyGroup>
 ```

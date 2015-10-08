@@ -29,14 +29,6 @@
     <Compile Include="Product.wxs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NuProj.Package.Dev14\NuProj.Package.Dev14.csproj">
-      <Name>NuProj.Package.Dev14</Name>
-      <Project>{f75dc9fd-cc16-4f24-a054-bd27dfff885c}</Project>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
-    </ProjectReference>
     <ProjectReference Include="..\NuProj.Tasks\NuProj.Tasks.csproj">
       <Name>NuProj.Tasks</Name>
       <Project>{187c3685-1ec7-4dce-933b-8f7a43d5a481}</Project>
@@ -45,9 +37,17 @@
       <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
       <RefTargetDir>INSTALLFOLDER</RefTargetDir>
     </ProjectReference>
-    <ProjectReference Include="..\NuProj.Package\NuProj.Package.csproj">
-      <Name>NuProj.Package</Name>
+    <ProjectReference Include="..\NuProj.ProjectSystem.12\NuProj.ProjectSystem.12.csproj">
+      <Name>NuProj.ProjectSystem.12</Name>
       <Project>{3C115530-0FB2-47B6-A6D5-9EB33611A394}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\NuProj.ProjectSystem.14\NuProj.ProjectSystem.14.csproj">
+      <Name>NuProj.ProjectSystem.14</Name>
+      <Project>{f75dc9fd-cc16-4f24-a054-bd27dfff885c}</Project>
       <Private>True</Private>
       <DoNotHarvest>True</DoNotHarvest>
       <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>

@@ -121,6 +121,27 @@ namespace NuProj.Tests
             Assert.Equal(dependencySet, package.DependencySets, PackageDependencySetComparer.Instance);
         }
 
+        [Fact]
+        public async Task Dependency_OmitDevelopmentDependencies()
+        {
+            var package = await Scenario.RestoreAndBuildSinglePackageAsync();
+
+            // We verify that one package dependency is present that should be transitive,
+            // and that a DevelopmentDependency=true package (StyleCop.Analyzers) is NOT present.
+            var dependencySet = new[]{
+                new PackageDependencySet(VersionUtility.ParseFrameworkName("net452"), new List<PackageDependency>
+                    {
+                        new PackageDependency("Microsoft.Tpl.Dataflow", new VersionSpec
+                            {
+                                IsMinInclusive = true,
+                                MinVersion = new SemanticVersion("4.5.24")
+                            }),
+                    }),
+            };
+
+            Assert.Equal(dependencySet, package.DependencySets, PackageDependencySetComparer.Instance);
+        }
+
         [Theory]
         [InlineData("Build")]
         [InlineData("Clean")]
