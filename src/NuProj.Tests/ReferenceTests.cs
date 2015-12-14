@@ -112,9 +112,9 @@ namespace NuProj.Tests
         {
             var package = await Scenario.RestoreAndBuildSinglePackageAsync("References_PackageDirectory", packageId);
             var actualFiles = package.GetFiles().Select(f => f.Path).OrderBy(x => x);
-            var actualDependencies = package.DependencySets.NullAsEmpty().Flatten().OrderBy(x => x);
+            var actualDependencies = package.DependencySets.NullAsEmpty().Flatten();
             expectedFiles = expectedFiles.OrderBy(x => x).ToArray();
-            expectedDependencies = expectedDependencies.OrderBy(x => x).ToArray();
+            expectedDependencies = expectedDependencies.ToArray();
             Assert.Equal(expectedFiles, actualFiles);
             Assert.Equal(expectedDependencies, actualDependencies);
         }

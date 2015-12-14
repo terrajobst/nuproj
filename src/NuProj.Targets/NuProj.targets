@@ -169,6 +169,7 @@
     <ProjectReference>
       <PackageDirectory>Lib</PackageDirectory>
       <TargetFramework></TargetFramework>
+      <VersionConstraint>*</VersionConstraint>
     </ProjectReference>
   </ItemDefinitionGroup>
 
@@ -858,10 +859,53 @@
       <NuProjDependency Remove="@(_NuProjDependency)" />
       <NuProjDependency Include="@(_NuProjDependency)" />
     </ItemGroup>
-
   </Target>
 
   <!--
+  ===================================================================================================================
+  ApplyVersionConstraintToNuProjDependency
+  ===================================================================================================================
+
+  Apply "VersionConstraint" metadata value to "Version" metadata, generating version applicable to dependency in 
+  nuspec file.
+
+  INPUTS:
+      @(NuProjDependency)                  Files coming from dependencies
+
+  OUTPUTS:
+      @(NuProjDependency)                  Files coming from dependencies with resolved version
+
+  =================================================================================================================== -->
+
+  <Target Name="ApplyVersionConstraintToNuProjDependency"
+          Inputs="@(NuProjDependency)"
+          Outputs="%(NuProjDependency.Identity)%(NuProjDependency.Kind)"
+          Returns="@(NuProjDependency)"
+          DependsOnTargets="GetNuProjPackageDependencies">
+    <PropertyGroup>
+      <_NuProjDependencyVersionConstraint>%(NuProjDependency.VersionConstraint)</_NuProjDependencyVersionConstraint>
+      <_NuProjDependencyVersion>%(NuProjDependency.Version)</_NuProjDependencyVersion>
+      <_NuProjDependencyVersion>$(_NuProjDependencyVersionConstraint.Replace('*', '$(_NuProjDependencyVersion)'))</_NuProjDependencyVersion>
+    </PropertyGroup>
+
+    <Message  Text="$(_NuProjDependencyVersion) $(_NuProjDependencyVersionConstraint)" Importance="high" />
+    
+    <ItemGroup>
+      <!-- Clear temporary items. -->
+      <_NuProjDependency Remove="@(_NuProjDependency)" />
+      
+      <_NuProjDependency Include="@(NuProjDependency)" />
+
+      <!-- Replace dependency item with ones that have target framework. -->
+      <NuProjDependency Remove="@(_NuProjDependency)" />
+      <NuProjDependency Include="@(_NuProjDependency)">
+        <Version>$(_NuProjDependencyVersion)</Version>
+      </NuProjDependency>
+    </ItemGroup>
+  </Target>
+
+
+    <!--
     ===================================================================================================================
     GetPackageDependencies
     ===================================================================================================================
@@ -874,7 +918,7 @@
     =================================================================================================================== -->
 
   <Target Name="GetPackageDependencies"
-          DependsOnTargets="AssignNuProjPackageDependenciesTargetFramework;GetNuGetPackageDependencies"
+          DependsOnTargets="AssignNuProjPackageDependenciesTargetFramework;ApplyVersionConstraintToNuProjDependency;GetNuGetPackageDependencies"
           Returns="@(Dependency)">
     <ItemGroup>
       <Dependency Include="@(NuProjDependency)"
@@ -941,7 +985,7 @@
         <NuGetDependency Include="@(_PackageReference)"
                          Condition="!%(IsDevelopmentDependency)"
                          RemoveMetadata="IsDevelopmentDependency;RequireReinstallation;VersionConstraint">
-          <Version Condition="'%(_PackageReference.VersionConstraint)' != ''">%(_PackageReference.VersionConstraint)</Version>
+          <Version Condition="'%(_PackageReference.VersionConstraint)' != '*'">%(_PackageReference.VersionConstraint)</Version>
         </NuGetDependency>
       </ItemGroup>
 

@@ -47,6 +47,16 @@
         <EnumValue Name="Tools" DisplayName="tools" />
     </EnumProperty>
 
+    <StringProperty Name="VersionConstraint"
+                    DisplayName="Version constraint"
+                    Category="Advanced"
+                    Description="The interval notation for specifying version ranges. Use * as token for referenced package version."
+                    Default="*">
+        <StringProperty.DataSource>
+            <DataSource Persistence="ProjectFile" ItemType="ProjectReference" HasConfigurationCondition="False" />
+        </StringProperty.DataSource>
+    </StringProperty>
+
     <StringProperty Name="Version"
                     ReadOnly="true"
                     Visible="false" />

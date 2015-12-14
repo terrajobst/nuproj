@@ -11,10 +11,12 @@ namespace NuProj.Tests.Infrastructure
             return from formattedDependency in
                        (from dependencySet in dependencySets
                         from dependency in dependencySet.Dependencies
+                        let dependencyString = dependency.ToString().Replace("\u2265", ">=").Replace("\u2264", "<=")
                         select dependencySet.TargetFramework == null
-                        ? dependency.ToString()
-                        : string.Format("{0} ({1})", dependency, VersionUtility.GetShortFrameworkName(dependencySet.TargetFramework)))
-                   select formattedDependency.Replace("\u2265", ">=").Replace("\u2264", "<=");
+                        ? dependencyString
+                        : string.Format("{0} ({1})", dependencyString, VersionUtility.GetShortFrameworkName(dependencySet.TargetFramework)))
+                   orderby formattedDependency
+                   select formattedDependency;
         }
 
         public static IEnumerable<T> NullAsEmpty<T>(this IEnumerable<T> source)

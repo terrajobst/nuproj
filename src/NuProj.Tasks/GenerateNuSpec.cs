@@ -252,11 +252,6 @@ namespace NuProj.Tasks
             SetMaxVersion(versionSpec, aggregate);
             SetMaxVersion(versionSpec, next);
 
-            if (versionSpec.MinVersion == null && versionSpec.MaxVersion == null)
-            {
-                versionSpec = null;
-            }
-
             return versionSpec;
         }
 
