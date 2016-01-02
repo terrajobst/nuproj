@@ -28,8 +28,8 @@ namespace NuProj.Tasks
             }).ToArray();
 
             var seenPackagePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            PackageFiles = (from item in OutputsWithTargetFrameworkInformation.Select(ConvertToPackageFile)
-                         let packagePath = item.GetMetadata(Metadata.FileTarget)
+            PackageFiles = (from item in OutputsWithTargetFrameworkInformation.Select(x => ConvertToPackageFile(x, this))
+                         let packagePath = item?.GetMetadata(Metadata.FileTarget)
                          where seenPackagePaths.Add(packagePath)
                          select item).ToArray();
 
@@ -37,7 +37,7 @@ namespace NuProj.Tasks
             return true;
         }
 
-        private static ITaskItem ConvertToPackageFile(ITaskItem output)
+        private static ITaskItem ConvertToPackageFile(ITaskItem output, Task task)
         {
             var fileName = output.ItemSpec;
             var targetPath = output.GetMetadata("TargetPath");
@@ -46,6 +46,18 @@ namespace NuProj.Tasks
             var packageDirectory = output.GetPackageDirectory();
             var targetFramework = frameworkNameMoniker.GetShortFrameworkName();
             var metadata = output.CloneCustomMetadata();
+
+            task.Log.LogMessage(
+                "ConvertToPackageFile: fileName={0} => targetFramework={3}, frameworkName={4}, frameworkProfile={5}, targetPath={1}, packageDirectory={2}", fileName,
+                targetPath, packageDirectory, targetFramework, frameworkNameMoniker.FullName, frameworkNameMoniker.Profile);
+
+            if (string.IsNullOrEmpty(targetFramework))
+            {
+                task.Log.LogError("Unable to determine targetFramework for {0}", targetPath);
+
+                return null;
+            }
+
             metadata[Metadata.TargetFramework] = targetFramework;
             metadata[Metadata.PackageDirectory] = packageDirectory.ToString();
             metadata[Metadata.FileTarget] = packageDirectory.Combine(targetFramework, targetPath);
