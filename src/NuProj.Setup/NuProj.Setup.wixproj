@@ -23,9 +23,9 @@
     <SuppressSpecificWarnings>1076</SuppressSpecificWarnings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Feature.VS12Integration.wxs" />
     <Compile Include="Feature.VS14Integration.wxs" />
     <Compile Include="Feature.BuildIntegration.wxs" />
-    <Compile Include="Feature.VS12Integration.wxs" />
     <Compile Include="Product.wxs" />
   </ItemGroup>
   <ItemGroup>
