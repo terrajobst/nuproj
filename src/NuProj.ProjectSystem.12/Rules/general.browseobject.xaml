@@ -35,6 +35,7 @@
 	<StringProperty Name="ReleaseNotes" DisplayName="Release Notes" Category="NuSpec" />
 	<StringProperty Name="MinClientVersion" DisplayName="Minimum NuGet Version" Category="NuSpec" />
 	<BoolProperty Name="DevelopmentDependency" Category="NuSpec" />
-	<StringProperty Name="OutputPath" DisplayName="Output path" Category="Build" />
+
+	<StringProperty Name="OutDir" DisplayName="Output Path" Category="Build" />
 
 </Rule>
