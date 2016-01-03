@@ -19,8 +19,23 @@
         </StringProperty.DataSource>
     </StringProperty>
 
-    <StringProperty Name="Id" DisplayName="Package ID" />
-    <StringProperty Name="Version" DisplayName="Package Version" />
-    <StringProperty Name="Title" DisplayName="Title" />
+	<StringProperty Name="Id" DisplayName="Package ID" Category="NuSpec" />
+	<StringProperty Name="Version" DisplayName="Package Version" Category="NuSpec" />
+	<StringProperty Name="Title" DisplayName="Title" Category="NuSpec" />
+	<StringProperty Name="Authors" DisplayName="Authors" Category="NuSpec" />
+	<StringProperty Name="Owners" DisplayName="Owners" Category="NuSpec" />
+	<StringProperty Name="Copyright" DisplayName="Copyright" Category="NuSpec" />
+	<StringProperty Name="IconUrl" DisplayName="Icon URL" Category="NuSpec" />
+	<StringProperty Name="ProjectUrl" DisplayName="Project URL" Category="NuSpec" />
+	<StringProperty Name="LicenseUrl" DisplayName="License URL" Category="NuSpec" />
+	<BoolProperty Name="RequireLicenseAcceptance" DisplayName="Require License Acceptance" Category="NuSpec" />
+	<StringProperty Name="Summary" DisplayName="Summary" Category="NuSpec" />
+	<StringProperty Name="Description" DisplayName="Description" Category="NuSpec" />
+	<StringProperty Name="Tags" DisplayName="Tags" Category="NuSpec" />
+	<StringProperty Name="ReleaseNotes" DisplayName="Release Notes" Category="NuSpec" />
+	<StringProperty Name="MinClientVersion" DisplayName="Minimum NuGet Version" Category="NuSpec" />
+	<BoolProperty Name="DevelopmentDependency" Category="NuSpec" />
+
+	<StringProperty Name="OutDir" DisplayName="Output Path" Category="Build" />
 
 </Rule>
