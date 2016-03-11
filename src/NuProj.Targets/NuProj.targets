@@ -552,7 +552,6 @@
       <Output TaskParameter="OutputSymbolsPackage" ItemName="FileWrites"/>
       <Output TaskParameter="OutputPackage" PropertyName="OutputPackage"/>
       <Output TaskParameter="OutputSymbolsPackage" PropertyName="OutputSymbolsPackage"/>
-      <Output TaskParameter="TargetName" PropertyName="TargetName"/>
       <Output TaskParameter="ExitCode" PropertyName="ExitCode"/>
     </NuGetPack>
 

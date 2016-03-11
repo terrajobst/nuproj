@@ -13,8 +13,7 @@ namespace NuProj.Tasks
     {
         [Required]
         public string PackagePath { get; set; }
-
-        [Required]
+        
         public string Source { get; set; }
 
         public string ApiKey { get; set; }
@@ -26,6 +25,16 @@ namespace NuProj.Tasks
             get { return "NuGet -push"; }
         }
 
+        public override bool Execute()
+        {
+            if (string.IsNullOrEmpty(Source))
+            {
+                Log.LogWarning("Skipping publishing: No Source Repository specified");
+                return false;
+            }
+
+            return base.Execute();
+        }
         protected override string GenerateFullPathToTool()
         {
             return Path.Combine(ToolPath, ToolExe);
