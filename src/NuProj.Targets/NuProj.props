@@ -16,6 +16,7 @@
     <EmbedSourceFiles Condition=" '$(EmbedSourceFiles)' == '' ">False</EmbedSourceFiles>
     <RequireLicenseAcceptance Condition=" '$(RequireLicenseAcceptance)' == '' ">False</RequireLicenseAcceptance>
     <DevelopmentDependency Condition=" '$(DevelopmentDependency)' == '' ">False</DevelopmentDependency>
+    <PublishPackage Condition=" '$(PublishPackage)' == '' ">Auto</PublishPackage>
   </PropertyGroup>
   
   <PropertyGroup>

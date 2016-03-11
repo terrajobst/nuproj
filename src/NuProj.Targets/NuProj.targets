@@ -46,7 +46,7 @@
     <OutputType>package</OutputType>
     <TargetExt>.nupkg</TargetExt>
     <AssemblyName>$(Id)</AssemblyName>
-    <TargetName Condition="'$(Version)' != ''">$(AssemblyName).$(Version)</TargetName>
+    <TargetName Condition="'$(Version)' != '' And $(Version) != '$version$'">$(AssemblyName).$(Version)</TargetName>
     <TargetFrameworkVersion Condition=" '$(TargetFrameworkVersion)' == '' ">v4.5.1</TargetFrameworkVersion>
     <DebugSymbols>false</DebugSymbols>
     <_SymbolsPackageProduced>false</_SymbolsPackageProduced>
@@ -112,8 +112,28 @@
   -->
 
   <Target Name="EstablishNuGetPaths" DependsOnTargets="$(VersionDependsOn)">
+    <GenerateVersion AssemblyName="$(AssemblyName)"
+					 Version="$(Version)"
+					 Files="@(ProjectReference)">
+      <Output TaskParameter="Version" PropertyName="Version" />
+    </GenerateVersion>
+
     <PropertyGroup>
-      <TargetName>$(AssemblyName).$(Version)</TargetName>
+      <DoPublishPackage>true</DoPublishPackage>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(ConfigurationName)' == 'Debug'">
+      <DoPublishPackage>false</DoPublishPackage>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(PublishPackage)' == 'Always'">
+      <DoPublishPackage>true</DoPublishPackage>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(PublishPackage)' == 'Never'">
+      <DoPublishPackage>false</DoPublishPackage>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <TargetName>$(AssemblyName)</TargetName>
+      <TargetName Condition="'$(Version)' != '$version$'">$(AssemblyName).$(Version)</TargetName>
       <TargetFileName>$(TargetName)$(TargetExt)</TargetFileName>
       <TargetPath>$(TargetDir)$(TargetFileName)</TargetPath>
       <NuGetOutputPath>$(TargetDir)$(TargetName)$(TargetExt)</NuGetOutputPath>
@@ -165,8 +185,10 @@
       CUSTOM TASKS
   -->
 
+  <UsingTask AssemblyFile="$(NuProjTasksPath)" TaskName="GenerateVersion" />
   <UsingTask AssemblyFile="$(NuProjTasksPath)" TaskName="GenerateNuSpec" />
   <UsingTask AssemblyFile="$(NuProjTasksPath)" TaskName="NuGetPack" />
+  <UsingTask AssemblyFile="$(NuProjTasksPath)" TaskName="NuGetPush" />
   <UsingTask AssemblyFile="$(NuProjTasksPath)" TaskName="AssignTargetFramework" />
   <UsingTask AssemblyFile="$(NuProjTasksPath)" TaskName="ReadPackagesConfig" />
   <UsingTask AssemblyFile="$(NuProjTasksPath)" TaskName="ReadPdbSourceFiles" />
@@ -510,11 +532,14 @@
     =================================================================================================================== -->
 
   <Target Name="CreatePackage"
-          Inputs="$(MSBuildAllProjects);
+           Inputs="$(MSBuildAllProjects);
                   $(NuSpecPath);
                   @(File)"
-          Outputs="$(NuGetOutputPath)"
-          DependsOnTargets="GenerateNuSpec;PrepareForBuild">
+           Outputs="$(NuGetOutputPath)"
+           DependsOnTargets="GenerateNuSpec;PrepareForBuild">
+    <PropertyGroup>
+      <ExitCode>0</ExitCode>
+    </PropertyGroup>
     <NuGetPack OutputDirectory="$(IntermediateOutputPath)"
                NoPackageAnalysis="$(NoPackageAnalysis)"
                NoDefaultExcludes="$(NoDefaultExcludes)"
@@ -525,7 +550,44 @@
                Properties="$(NuSpecProperties)">
       <Output TaskParameter="OutputPackage" ItemName="FileWrites"/>
       <Output TaskParameter="OutputSymbolsPackage" ItemName="FileWrites"/>
+      <Output TaskParameter="OutputPackage" PropertyName="OutputPackage"/>
+      <Output TaskParameter="OutputSymbolsPackage" PropertyName="OutputSymbolsPackage"/>
+      <Output TaskParameter="ExitCode" PropertyName="ExitCode"/>
     </NuGetPack>
+
+    <Error Code="$(ExitCode)" Text="An error occurred while building the package" Condition="'$(ExitCode)' != '0'"  />
+    <Message Text="Created package $(OutputPackage)"
+         Condition="'$(OutputPackage)' != '' And $(DoPublishPackage) And '$(ExitCode)' == '0'"
+         Importance="High" />
+
+    <Message Text="Publishing $(OutputPackage) to $(Repository)..."
+         Condition="'$(OutputPackage)' != '' And '$(OutputSymbolsPackage)' == '' And $(DoPublishPackage)  And '$(ExitCode)' == '0'"
+         Importance="High" />
+    <NuGetPush Condition="'$(OutputPackage)' != '' And '$(OutputSymbolsPackage)' == '' And $(DoPublishPackage) And '$(ExitCode)' == '0'"
+           ContinueOnError="WarnAndContinue"
+           PackagePath="$(OutputPackage)"
+           Source="$(Repository)"
+           ApiKey="$(ApiKey)"
+           ToolPath="$(NuGetToolPath)"
+           ToolExe="$(NuGetToolExe)">
+      <Output TaskParameter="ExitCode" PropertyName="ExitCode"/>
+    </NuGetPush>
+    <Warning Code="$(ExitCode)" Text="An error occurred while publishing the main package" Condition="'$(OutputPackage)' != '' And '$(OutputSymbolsPackage)' == '' And $(DoPublishPackage) And '$(ExitCode)' != '0'"  />
+
+    <Message Text="Publishing $(OutputSymbolsPackage) to $(Repository)..."
+         Condition="'$(OutputSymbolsPackage)' != '' And $(DoPublishPackage)  And '$(ExitCode)' == '0'"
+         Importance="High" />
+    <NuGetPush Condition="'$(OutputSymbolsPackage)' != '' And $(DoPublishPackage)  And '$(ExitCode)' == '0'"
+           ContinueOnError="WarnAndContinue"
+           PackagePath="$(OutputSymbolsPackage)"
+           Source="$(Repository)"
+           ApiKey="$(ApiKey)"
+           ToolPath="$(NuGetToolPath)"
+           ToolExe="$(NuGetToolExe)">
+      <Output TaskParameter="ExitCode" PropertyName="ExitCode"/>
+    </NuGetPush>
+    <Warning Code="$(ExitCode)" Text="An error occurred while publishing the symbols package" Condition="'$(OutputSymbolsPackage)' != '' And $(DoPublishPackage)  And '$(ExitCode)' != '0'"  />
+
   </Target>
 
   <!--
