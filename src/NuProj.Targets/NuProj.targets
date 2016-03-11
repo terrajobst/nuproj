@@ -532,11 +532,14 @@
     =================================================================================================================== -->
 
   <Target Name="CreatePackage"
-          Inputs="$(MSBuildAllProjects);
+           Inputs="$(MSBuildAllProjects);
                   $(NuSpecPath);
                   @(File)"
-          Outputs="$(NuGetOutputPath)"
-          DependsOnTargets="GenerateNuSpec;PrepareForBuild">
+           Outputs="$(NuGetOutputPath)"
+           DependsOnTargets="GenerateNuSpec;PrepareForBuild">
+    <PropertyGroup>
+      <ExitCode>0</ExitCode>
+    </PropertyGroup>
     <NuGetPack OutputDirectory="$(IntermediateOutputPath)"
                NoPackageAnalysis="$(NoPackageAnalysis)"
                NoDefaultExcludes="$(NoDefaultExcludes)"
@@ -547,7 +550,45 @@
                Properties="$(NuSpecProperties)">
       <Output TaskParameter="OutputPackage" ItemName="FileWrites"/>
       <Output TaskParameter="OutputSymbolsPackage" ItemName="FileWrites"/>
+      <Output TaskParameter="OutputPackage" PropertyName="OutputPackage"/>
+      <Output TaskParameter="OutputSymbolsPackage" PropertyName="OutputSymbolsPackage"/>
+      <Output TaskParameter="TargetName" PropertyName="TargetName"/>
+      <Output TaskParameter="ExitCode" PropertyName="ExitCode"/>
     </NuGetPack>
+
+    <Error Code="$(ExitCode)" Text="An error occurred while building the package" Condition="'$(ExitCode)' != '0'"  />
+    <Message Text="Created package $(OutputPackage)"
+         Condition="'$(OutputPackage)' != '' And $(DoPublishPackage) And '$(ExitCode)' == '0'"
+         Importance="High" />
+
+    <Message Text="Publishing $(OutputPackage) to $(Repository)..."
+         Condition="'$(OutputPackage)' != '' And '$(OutputSymbolsPackage)' == '' And $(DoPublishPackage)  And '$(ExitCode)' == '0'"
+         Importance="High" />
+    <NuGetPush Condition="'$(OutputPackage)' != '' And '$(OutputSymbolsPackage)' == '' And $(DoPublishPackage) And '$(ExitCode)' == '0'"
+           ContinueOnError="WarnAndContinue"
+           PackagePath="$(OutputPackage)"
+           Source="$(Repository)"
+           ApiKey="$(ApiKey)"
+           ToolPath="$(NuGetToolPath)"
+           ToolExe="$(NuGetToolExe)">
+      <Output TaskParameter="ExitCode" PropertyName="ExitCode"/>
+    </NuGetPush>
+    <Warning Code="$(ExitCode)" Text="An error occurred while publishing the main package" Condition="'$(OutputPackage)' != '' And '$(OutputSymbolsPackage)' == '' And $(DoPublishPackage) And '$(ExitCode)' != '0'"  />
+
+    <Message Text="Publishing $(OutputSymbolsPackage) to $(Repository)..."
+         Condition="'$(OutputSymbolsPackage)' != '' And $(DoPublishPackage)  And '$(ExitCode)' == '0'"
+         Importance="High" />
+    <NuGetPush Condition="'$(OutputSymbolsPackage)' != '' And $(DoPublishPackage)  And '$(ExitCode)' == '0'"
+           ContinueOnError="WarnAndContinue"
+           PackagePath="$(OutputSymbolsPackage)"
+           Source="$(Repository)"
+           ApiKey="$(ApiKey)"
+           ToolPath="$(NuGetToolPath)"
+           ToolExe="$(NuGetToolExe)">
+      <Output TaskParameter="ExitCode" PropertyName="ExitCode"/>
+    </NuGetPush>
+    <Warning Code="$(ExitCode)" Text="An error occurred while publishing the symbols package" Condition="'$(OutputSymbolsPackage)' != '' And $(DoPublishPackage)  And '$(ExitCode)' != '0'"  />
+
   </Target>
 
   <!--
