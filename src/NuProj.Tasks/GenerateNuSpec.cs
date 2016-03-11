@@ -10,6 +10,9 @@ using NuGet;
 
 namespace NuProj.Tasks
 {
+    using System.Diagnostics;
+    using System.Runtime.InteropServices;
+
     public class GenerateNuSpec : Task
     {
         private const string NuSpecXmlNamespace = @"http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd";
@@ -19,12 +22,19 @@ namespace NuProj.Tasks
         [Required]
         public string OutputFileName { get; set; }
 
+        public string AssemblyName { get; set; }
+
+        [Output]
+        public string TargetName
+            => $"{AssemblyName}.{Version}";
+
         public string MinClientVersion { get; set; }
 
         [Required]
         public string Id { get; set; }
 
         [Required]
+        [Output]
         public string Version { get; set; }
 
         [Required]
@@ -151,7 +161,7 @@ namespace NuProj.Tasks
             }
 
             manifestMetadata = manifest.Metadata;
-
+            
             manifestMetadata.UpdateMember(x => x.Authors, Authors);
             manifestMetadata.UpdateMember(x => x.Copyright, Copyright);
             manifestMetadata.AddRangeToMember(x => x.DependencySets, GetDependencySets());
@@ -179,7 +189,7 @@ namespace NuProj.Tasks
         }
 
         private List<ManifestFile> GetManifestFiles()
-        {
+        {            
             return (from f in Files.NullAsEmpty()
                     select new ManifestFile
                     {

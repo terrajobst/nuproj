@@ -32,7 +32,10 @@
 
     <ComponentGroup Id="MSBuildIntegration">
       <Component Directory="INSTALLDIR">
-        <File Source="$(var.SolutionDir)packages\NuGet.CommandLine.2.8.6\tools\NuGet.exe" />
+        <File Source="$(var.SolutionDir)NuGet.VSTS\tools\CredentialProvider.VSS.exe" />
+      </Component>
+      <Component Directory="INSTALLDIR">
+        <File Source="$(var.SolutionDir)NuGet.VSTS\tools\NuGet.exe" />
       </Component>
       <Component Directory="INSTALLDIR">
         <File Source="$(var.NuProj.Tasks.TargetDir)Additional\NuProj.targets" />

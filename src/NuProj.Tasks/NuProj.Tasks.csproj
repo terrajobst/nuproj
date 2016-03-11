@@ -56,6 +56,10 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml" />
+    <Reference Include="xunit.abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\packages\xunit.abstractions.2.0.0\lib\net35\xunit.abstractions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
@@ -63,9 +67,11 @@
     </Compile>
     <Compile Include="AssignTargetFramework.cs" />
     <Compile Include="GenerateNuSpec.cs" />
+    <Compile Include="GenerateVersion.cs" />
     <Compile Include="AssignSourceTargetPaths.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Metadata.cs" />
+    <Compile Include="NuGetPush.cs" />
     <Compile Include="NuGetPack.cs" />
     <Compile Include="ReadPackagesConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -80,6 +86,7 @@
     <None Include="..\NuProj.Targets\NuProj.targets">
       <Link>Additional\NuProj.targets</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </None>
     <None Include="..\NuProj.Targets\NuProj.props">
       <Link>Additional\NuProj.props</Link>
