@@ -7,6 +7,8 @@ using Microsoft.Build.Utilities;
 
 namespace NuProj.Tasks
 {
+    using System.Diagnostics;
+
     public class NuGetPack : ToolTask
     {
         [Required]
@@ -23,6 +25,10 @@ namespace NuProj.Tasks
         public bool ExcludeEmptyDirectories { get; set; }
 
         public string Properties { get; set; }
+
+        public bool Verbose { get; set; } = false;
+
+        public bool IncludeReferencedProjects { get; set; } = true;
 
         [Output]
         public ITaskItem[] OutputPackage { get; private set; }
@@ -59,6 +65,12 @@ namespace NuProj.Tasks
 
             if (ExcludeEmptyDirectories)
                 builder.AppendSwitch("-ExcludeEmptyDirectories");
+
+            if (IncludeReferencedProjects)
+                builder.AppendSwitch("-IncludeReferencedProjects");
+
+            if (Verbose)
+                builder.AppendSwitch("-Verbosity Detailed");
 
             return builder.ToString();
         }
