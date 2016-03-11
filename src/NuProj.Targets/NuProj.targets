@@ -188,6 +188,7 @@
   <UsingTask AssemblyFile="$(NuProjTasksPath)" TaskName="GenerateVersion" />
   <UsingTask AssemblyFile="$(NuProjTasksPath)" TaskName="GenerateNuSpec" />
   <UsingTask AssemblyFile="$(NuProjTasksPath)" TaskName="NuGetPack" />
+  <UsingTask AssemblyFile="$(NuProjTasksPath)" TaskName="NuGetPush" />
   <UsingTask AssemblyFile="$(NuProjTasksPath)" TaskName="AssignTargetFramework" />
   <UsingTask AssemblyFile="$(NuProjTasksPath)" TaskName="ReadPackagesConfig" />
   <UsingTask AssemblyFile="$(NuProjTasksPath)" TaskName="ReadPdbSourceFiles" />
