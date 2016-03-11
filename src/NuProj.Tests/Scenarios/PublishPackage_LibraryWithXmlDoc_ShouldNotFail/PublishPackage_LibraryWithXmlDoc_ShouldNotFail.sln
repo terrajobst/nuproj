@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FF286327-C783-4F7A-AB73-9BCBAD0D4460}") = "Package", "Package\Package.nuproj", "{CD8AF5A5-F5B9-416F-A46B-937DE8DD0BFF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Library", "Library\Library.csproj", "{578C0C65-BB9E-43F7-BECA-A931B6766306}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CD8AF5A5-F5B9-416F-A46B-937DE8DD0BFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD8AF5A5-F5B9-416F-A46B-937DE8DD0BFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD8AF5A5-F5B9-416F-A46B-937DE8DD0BFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD8AF5A5-F5B9-416F-A46B-937DE8DD0BFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{578C0C65-BB9E-43F7-BECA-A931B6766306}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{578C0C65-BB9E-43F7-BECA-A931B6766306}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{578C0C65-BB9E-43F7-BECA-A931B6766306}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{578C0C65-BB9E-43F7-BECA-A931B6766306}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
