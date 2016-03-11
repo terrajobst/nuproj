@@ -109,9 +109,19 @@
 
       We set these properties in a Target so that other targets that determine what $(Version)
       should be can run first.
+      
+      If $(Version) is empty or equal to '$version$', it is overwritten with the version specified in 
+      the Properties/AssemblyInfo.cs file.
+      
   -->
 
   <Target Name="EstablishNuGetPaths" DependsOnTargets="$(VersionDependsOn)">
+    <GenerateVersion AssemblyName="$(AssemblyName)"
+       Version="$(Version)"
+       Files="@(ProjectReference)">
+      <Output TaskParameter="Version" PropertyName="Version" />
+    </GenerateVersion>
+
     <PropertyGroup>
       <TargetName>$(AssemblyName).$(Version)</TargetName>
       <TargetFileName>$(TargetName)$(TargetExt)</TargetFileName>
