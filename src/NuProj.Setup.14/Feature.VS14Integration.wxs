@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+
+    <PropertyRef Id="VS14_ROOT_FOLDER" />
+    <PropertyRef Id="VS14_EXTENSIONS_DIR" />
+    <PropertyRef Id="VS14_PROJECTTEMPLATES_DIR" />
+    <CustomActionRef Id="VS14Setup" />
+
+    <Feature Id="VS14Integration"
+             Title="Visual Studio 2015 Integration"
+             AllowAdvertise="no"
+             Level="0">
+      <Condition Level="1">VS14_ROOT_FOLDER</Condition>
+      <ComponentGroupRef Id="NuProjProjectSystem14" />
+      <ComponentGroupRef Id="VS140.ProjectTemplates.NuGet" />
+    </Feature>
+
+    <DirectoryRef Id="TARGETDIR">
+      <Directory Id="VS14_EXTENSIONS_DIR" Name="VS14_EXTENSIONS_DIR">
+        <Directory Id="VS140.NuGet" Name="NuGet">
+          <Directory Id="VS140.NuProj" Name="NuProj" />
+        </Directory>
+      </Directory>
+      <Directory Id="VS14_PROJECTTEMPLATES_DIR" Name="VS14_PROJECTTEMPLATES_DIR">
+        <Directory Id="VS140.ProjectTemplates.NuGet" Name="NuProj" />
+      </Directory>
+    </DirectoryRef>
+
+    <ComponentGroup Id="NuProjProjectSystem14" Directory="VS140.NuProj">
+      <Component Id="VS14.extension.vsixmanifest" Guid="{FA626AFD-00EE-4DC3-8BBF-8D18E56F449E}">
+        <File Source="$(var.NuProj.ProjectSystem.14.TargetDir)extension.vsixmanifest" Id="VS14.extension.vsixmanifest" />
+      </Component>
+      <Component Id="VS14.NuProj.icon" Guid="{9AC0CB17-A1DF-4263-9E48-942F9F8A21EA}">
+        <File Source="$(var.SolutionDir)Icons\NuProj.ico" Id="VS14.NuProj.ico" />
+      </Component>
+      <Component Id="VS14.NuProj.ProjectSystem.dll" Guid="{63295F02-0E47-43AE-A787-FE6988EABEF6}">
+        <File Source="$(var.NuProj.ProjectSystem.14.TargetDir)NuProj.ProjectSystem.14.dll" />
+      </Component>
+      <Component Id="VS14.NuProj.ProjectSystem.pdb" Guid="{20E27E4B-6407-4123-BFEF-9EFCC64DAFD8}">
+        <File Source="$(var.NuProj.ProjectSystem.14.TargetDir)NuProj.ProjectSystem.14.pdb" />
+      </Component>
+      <Component Id="VS14.NuProj.ProjectSystem.pkgdef" Guid="{A2C4D64B-6DF1-41A6-B223-7423B26B3A2F}">
+        <File Source="$(var.NuProj.ProjectSystem.14.TargetDir)NuProj.ProjectSystem.14.pkgdef" />
+      </Component>
+    </ComponentGroup>
+    <ComponentGroup Id="VS140.ProjectTemplates.NuGet" Directory="VS140.ProjectTemplates.NuGet">
+      <Component Id="VS14.NuProj.zip" Guid="{3DADDB61-0EB4-4598-8554-E0BC94A6FC33}">
+        <File Source="$(var.NuProj.ProjectSystem.14.TargetDir)ProjectTemplates\NuGet\1033\NuProj.zip" Id="VS14.NuProj.zip" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>
