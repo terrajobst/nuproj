@@ -111,6 +111,8 @@
       <HintPath>..\packages\Microsoft.VisualStudio.Validation.14.0.50702\lib\net45\Microsoft.VisualStudio.Validation.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Collections.Immutable, Version=1.1.36.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Collections.Immutable.1.1.36\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
@@ -152,6 +154,7 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="EnvDTE">
@@ -269,35 +272,6 @@
     </Resource>
   </ItemGroup>
   <ItemGroup>
-    <XamlPropertyRule Include="..\NuProj.ProjectSystem.12\Rules\content.xaml">
-      <Link>Rules\content.xaml</Link>
-    </XamlPropertyRule>
-    <XamlPropertyRule Include="..\NuProj.ProjectSystem.12\Rules\folder.xaml">
-      <Link>Rules\folder.xaml</Link>
-    </XamlPropertyRule>
-    <XamlPropertyRule Include="..\NuProj.ProjectSystem.12\Rules\general.browseobject.xaml">
-      <Link>Rules\general.browseobject.xaml</Link>
-    </XamlPropertyRule>
-    <XamlPropertyRule Include="..\NuProj.ProjectSystem.12\Rules\general.xaml">
-      <Link>Rules\general.xaml</Link>
-    </XamlPropertyRule>
-    <XamlPropertyRule Include="..\NuProj.ProjectSystem.12\Rules\none.xaml">
-      <Link>Rules\none.xaml</Link>
-    </XamlPropertyRule>
-    <None Include="..\NuProj.ProjectSystem.12\Rules\ProjectItemsSchema.xaml">
-      <Link>Rules\ProjectItemsSchema.xaml</Link>
-    </None>
-    <XamlPropertyRule Include="..\NuProj.ProjectSystem.12\Rules\ProjectReference.xaml">
-      <Link>Rules\ProjectReference.xaml</Link>
-    </XamlPropertyRule>
-    <XamlPropertyRule Include="..\NuProj.ProjectSystem.12\Rules\ResolvedProjectReference.xaml">
-      <Link>Rules\ResolvedProjectReference.xaml</Link>
-    </XamlPropertyRule>
-    <XamlPropertyRule Include="..\NuProj.ProjectSystem.12\Rules\scc.xaml">
-      <Link>Rules\scc.xaml</Link>
-    </XamlPropertyRule>
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="..\NuProj.ProjectSystem.12\Resources.resx">
       <Link>Resources.resx</Link>
       <Generator>ResXFileCodeGenerator</Generator>
@@ -317,6 +291,44 @@
   <ItemGroup>
     <Analyzer Include="..\packages\Microsoft.CodeAnalysis.Analyzers.1.0.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.Analyzers.dll" />
     <Analyzer Include="..\packages\Microsoft.CodeAnalysis.Analyzers.1.0.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.Analyzers.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Rules\content.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Rules\folder.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Rules\general.browseobject.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Rules\general.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Rules\none.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Rules\ProjectItemsSchema.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Rules\ProjectReference.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Rules\ResolvedProjectReference.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Rules\scc.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <PropertyGroup>
     <UseCodebase>true</UseCodebase>
