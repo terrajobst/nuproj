@@ -75,7 +75,7 @@ namespace NuProj.Tests.Infrastructure
         /// <param name="projectInstance">The project to build.</param>
         /// <param name="targetsToBuild">The targets to build. If not specified, the project's default target will be invoked.</param>
         /// <returns>A task whose result is the result of the build.</returns>
-        public static async Task<BuildResultAndLogs> ExecuteAsync(ProjectInstance projectInstance, params string[] targetsToBuild)
+        public static async Task<BuildResultAndLogs> ExecuteAsync(ProjectInstance projectInstance, ITestOutputHelper testLogger = null, params string[] targetsToBuild)
         {
             targetsToBuild = (targetsToBuild == null || targetsToBuild.Length == 0) ? projectInstance.DefaultTargets.ToArray() : targetsToBuild;
 
@@ -86,6 +86,7 @@ namespace NuProj.Tests.Infrastructure
                 Loggers = new List<ILogger>
                 {
                     new ConsoleLogger(LoggerVerbosity.Detailed, logLines.Add, null, null),
+                    new ConsoleLogger(LoggerVerbosity.Minimal, v => testLogger?.WriteLine(v.TrimEnd()), null, null),
                     logger,
                 },
             };
