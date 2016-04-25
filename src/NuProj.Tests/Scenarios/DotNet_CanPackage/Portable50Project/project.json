@@ -1,0 +1,16 @@
+﻿{
+  "dependencies": {
+    "Microsoft.NETCore": "5.0.0",
+    "Microsoft.NETCore.Portable.Compatibility": "1.0.0",
+    "NuProj.Common": "0.10.4-beta"
+  },
+  "frameworks": {
+    "dotnet": {
+      "imports": "portable-net45+win8"
+    }
+  },
+  "supports": {
+    "net46.app": { },
+    "dnxcore50.app": { }
+  }
+}

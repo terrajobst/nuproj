@@ -10,15 +10,18 @@ using Microsoft.Build.Execution;
 using NuProj.Tests.Infrastructure;
 
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NuProj.Tests
 {
     public class BasicTests : IDisposable
     {
+        private readonly ITestOutputHelper logger;
         private Microsoft.Build.Evaluation.Project nuproj;
 
-        public BasicTests()
+        public BasicTests(ITestOutputHelper logger)
         {
+            this.logger = logger;
             this.nuproj = Assets.FromTemplate()
                                 .AssignNuProjDirectory()
                                 .ToProject();
@@ -36,7 +39,7 @@ namespace NuProj.Tests
         public async Task Basic_ProjectTemplateCanBuild()
         {
             nuproj.CreateMockContentFiles();
-            var result = await MSBuild.ExecuteAsync(nuproj.CreateProjectInstance());
+            var result = await MSBuild.ExecuteAsync(nuproj.CreateProjectInstance(), this.logger);
             result.AssertSuccessfulBuild();
         }
 
@@ -52,7 +55,7 @@ namespace NuProj.Tests
         public async Task Basic_PackageIncludesContentFiles()
         {
             nuproj.CreateMockContentFiles();
-            var result = await MSBuild.ExecuteAsync(nuproj.CreateProjectInstance());
+            var result = await MSBuild.ExecuteAsync(nuproj.CreateProjectInstance(), this.logger);
             result.AssertSuccessfulBuild();
             await AssertNu.PackageContainsContentItemsAsync(nuproj);
         }
@@ -61,7 +64,7 @@ namespace NuProj.Tests
         public async Task Basic_NuSpecPropertiesMatchProjectProperties()
         {
             nuproj.CreateMockContentFiles();
-            var result = await MSBuild.ExecuteAsync(nuproj.CreateProjectInstance());
+            var result = await MSBuild.ExecuteAsync(nuproj.CreateProjectInstance(), this.logger);
             result.AssertSuccessfulBuild();
 
             var package = await nuproj.GetPackageAsync();
@@ -98,7 +101,7 @@ namespace NuProj.Tests
             // This test focuses on a completely empty project.
             nuproj.RemoveItems(nuproj.GetItems("Content"));
 
-            var result = await MSBuild.ExecuteAsync(nuproj.CreateProjectInstance());
+            var result = await MSBuild.ExecuteAsync(nuproj.CreateProjectInstance(), this.logger);
 
             // Verify that the build fails and tells the user why.
             Assert.Equal(BuildResultCode.Failure, result.Result.OverallResult);
@@ -112,7 +115,7 @@ namespace NuProj.Tests
             nuproj.CreateMockContentFiles();
             nuproj.SetGlobalProperty("IntermediateOutputPath", intermediateOutputPath);
 
-            var result = await MSBuild.ExecuteAsync(nuproj.CreateProjectInstance());
+            var result = await MSBuild.ExecuteAsync(nuproj.CreateProjectInstance(), this.logger);
             result.AssertSuccessfulBuild();
 
             var expectedNuSpecFileName = string.Format(CultureInfo.InvariantCulture, "{0}.nuspec", nuproj.GetPropertyValue("Id"));
@@ -130,7 +133,7 @@ namespace NuProj.Tests
             nuproj.SetGlobalProperty("IntermediateOutputPath", intermediateOutputPath);
             nuproj.SetGlobalProperty("GenerateProjectSpecificOutputFolder", @"true");
 
-            var result = await MSBuild.ExecuteAsync(nuproj.CreateProjectInstance());
+            var result = await MSBuild.ExecuteAsync(nuproj.CreateProjectInstance(), this.logger);
             result.AssertSuccessfulBuild();
 
             var expectedNuSpecFileName = string.Format(CultureInfo.InvariantCulture, "{0}.nuspec", nuproj.GetPropertyValue("Id"));
@@ -147,7 +150,7 @@ namespace NuProj.Tests
             nuproj.CreateMockContentFiles();
             nuproj.SetGlobalProperty("OutDir", outDir);
 
-            var result = await MSBuild.ExecuteAsync(nuproj.CreateProjectInstance());
+            var result = await MSBuild.ExecuteAsync(nuproj.CreateProjectInstance(), this.logger);
             result.AssertSuccessfulBuild();
 
             var expectedNuPkgFileName = string.Format(CultureInfo.InvariantCulture, "{0}.{1}.nupkg", nuproj.GetPropertyValue("Id"), nuproj.GetPropertyValue("Version"));
@@ -166,7 +169,7 @@ namespace NuProj.Tests
             nuproj.SetGlobalProperty("OutDir", outDir);
             nuproj.SetGlobalProperty("GenerateProjectSpecificOutputFolder", @"true");
 
-            var result = await MSBuild.ExecuteAsync(nuproj.CreateProjectInstance());
+            var result = await MSBuild.ExecuteAsync(nuproj.CreateProjectInstance(), this.logger);
             result.AssertSuccessfulBuild();
 
             var expectedNuPkgFileName = string.Format(CultureInfo.InvariantCulture, "{0}.{1}.nupkg", nuproj.GetPropertyValue("Id"), nuproj.GetPropertyValue("Version"));

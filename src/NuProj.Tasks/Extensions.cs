@@ -98,6 +98,13 @@ namespace NuProj.Tasks
                 return null;
             }
 
+            if (frameworkName.Identifier == ".NETPortable" && frameworkName.Version.Major == 5 && frameworkName.Version.Minor == 0)
+            {
+                // Avoid calling GetShortFrameworkName because NuGet throws ArgumentException
+                // in this case.
+                return "dotnet";
+            }
+
             return VersionUtility.GetShortFrameworkName(frameworkName);
         }
 

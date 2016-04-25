@@ -50,14 +50,14 @@ namespace NuProj.Tests.Infrastructure
 
         public static async Task<string> GetNuPkgPathAsync(this Project nuProj)
         {
-            var result = await MSBuild.ExecuteAsync(nuProj.CreateProjectInstance(), "EstablishNuGetPaths");
+            var result = await MSBuild.ExecuteAsync(nuProj.CreateProjectInstance(), targetsToBuild: "EstablishNuGetPaths");
             AssertNu.SuccessfulBuild(result);
             return result.Result.ProjectStateAfterBuild.GetPropertyValue("NuGetOutputPath");
         }
 
         public static async Task<string> GetNuSpecPathAsync(this Project nuProj)
         {
-            var result = await MSBuild.ExecuteAsync(nuProj.CreateProjectInstance(), "EstablishNuGetPaths");
+            var result = await MSBuild.ExecuteAsync(nuProj.CreateProjectInstance(), targetsToBuild: "EstablishNuGetPaths");
             AssertNu.SuccessfulBuild(result);
             return result.Result.ProjectStateAfterBuild.GetPropertyValue("NuSpecPath");
         }

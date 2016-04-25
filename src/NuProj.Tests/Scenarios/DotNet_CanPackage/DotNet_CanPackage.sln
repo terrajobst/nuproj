@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Portable50Project", "Portable50Project\Portable50Project.csproj", "{6561E678-5F85-4BC8-A46B-02A7E695469D}"
+EndProject
+Project("{FF286327-C783-4F7A-AB73-9BCBAD0D4460}") = "NuGetPackage", "NuGetPackage\NuGetPackage.nuproj", "{79CE8C3E-25E3-4EE4-B0FE-8D66DDFA2187}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6561E678-5F85-4BC8-A46B-02A7E695469D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6561E678-5F85-4BC8-A46B-02A7E695469D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6561E678-5F85-4BC8-A46B-02A7E695469D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6561E678-5F85-4BC8-A46B-02A7E695469D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79CE8C3E-25E3-4EE4-B0FE-8D66DDFA2187}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79CE8C3E-25E3-4EE4-B0FE-8D66DDFA2187}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79CE8C3E-25E3-4EE4-B0FE-8D66DDFA2187}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79CE8C3E-25E3-4EE4-B0FE-8D66DDFA2187}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
