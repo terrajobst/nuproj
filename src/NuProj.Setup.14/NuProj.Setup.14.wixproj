@@ -9,7 +9,7 @@
     <OutputName>NuProj</OutputName>
     <OutputType>Package</OutputType>
     <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' ">..\packages\WiX.3.9\tools\Wix.targets</WixTargetsPath>
-    <WixInstallPath>$(MSBuildProjectDirectory)\..\packages\WiX.3.9\tools\wix</WixInstallPath>
+    <WixInstallPath>$(MSBuildProjectDirectory)\..\packages\WiX.3.9\tools\</WixInstallPath>
     <Name>NuProj.Setup.14</Name>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
