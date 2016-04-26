@@ -8,8 +8,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <OutputName>NuProj</OutputName>
     <OutputType>Package</OutputType>
-    <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' ">..\packages\WiX.Toolset.3.9.1208.0\tools\wix\Wix.targets</WixTargetsPath>
-    <WixInstallPath>$(MSBuildProjectDirectory)\..\packages\WiX.Toolset.3.9.1208.0\tools\wix</WixInstallPath>
+    <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' ">..\packages\WiX.3.9\tools\Wix.targets</WixTargetsPath>
+    <WixInstallPath>$(MSBuildProjectDirectory)\..\packages\WiX.3.9\tools\</WixInstallPath>
     <Name>NuProj.Setup.14</Name>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
