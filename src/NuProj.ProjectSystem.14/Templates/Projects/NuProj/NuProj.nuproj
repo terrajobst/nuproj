@@ -11,6 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup>
+    <OutDir Condition="'$(LocalNuGet)' != ''">$(LocalNuGet)</OutDir>
+  </PropertyGroup>
+  <PropertyGroup>
     <NuProjPath Condition=" '$(NuProjPath)' == '' ">$(MSBuildExtensionsPath)\NuProj\</NuProjPath>
   </PropertyGroup>
   <Import Project="$(NuProjPath)\NuProj.props" Condition="Exists('$(NuProjPath)\NuProj.props')" />
