@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+
+  <?define Manufacturer        = "Immo Landwerth" ?>
+  <?define ProductName         = "NuProj" ?>
+  <?define ProductHomePage     = "http://nuproj.net" ?>
+  <?define UpgradeCode         = "73875B23-C4D8-49CC-B34D-380325A4A0D8" ?>
+
+  <Product Id="*"
+           Name="$(var.ProductName)"
+           Language="1033"
+           Version="!(bind.fileVersion.NuProj.Tasks.dll)"
+           Manufacturer="$(var.Manufacturer)"
+           UpgradeCode="$(var.UpgradeCode)">
+
+    <Package InstallerVersion="200"
+             Compressed="yes"
+             InstallScope="perMachine" />
+
+    <MajorUpgrade AllowSameVersionUpgrades="yes"
+                  DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+
+    <MediaTemplate EmbedCab="yes" />
+
+    <Directory Id="TARGETDIR" Name="SourceDir" />
+
+    <FeatureRef Id="MSBuildIntegration" />
+    <FeatureRef Id="VS14Integration" />
+
+    <Icon Id="NuProjIcon" SourceFile="$(var.SolutionDir)Icons\NuProj.ico" />
+
+    <Property Id="ARPPRODUCTICON"
+              Value="NuProjIcon" />
+    <Property Id="ARPHELPLINK"
+              Value="$(var.ProductHomePage)" />
+    <Property Id="ARPURLINFOABOUT"
+              Value="$(var.ProductHomePage)" />
+    <Property Id="ARPURLUPDATEINFO"
+              Value="$(var.ProductHomePage)" />
+
+    <WixVariable Id="WixUILicenseRtf"
+                 Value="Resources\License.rtf" />
+    <WixVariable Id="WixUIBannerBmp"
+                 Value="Resources\Banner.jpg" />
+    <WixVariable Id="WixUIDialogBmp"
+                 Value="Resources\Dialog.jpg" />
+
+    <UI>
+      <UIRef Id="WixUI_Minimal" />
+    </UI>
+  </Product>
+
+</Wix>
