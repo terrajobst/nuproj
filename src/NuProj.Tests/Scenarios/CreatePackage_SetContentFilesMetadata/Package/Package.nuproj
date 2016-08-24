@@ -43,6 +43,9 @@
       <PackageCopyToOutput>True</PackageCopyToOutput>
     </ContentFile>
     <ContentFile Include="contentFiles\cs\any\Class.cs.pp" />
+    <ContentFile Include="Class1.cs.pp">
+      <Link>contentFiles\cs\any\Class1.cs.pp</Link>
+    </ContentFile>
     <Content Include="Readme.txt" />
   </ItemGroup>
   <Import Project="$(NuProjPath)\NuProj.targets" />

@@ -275,7 +275,17 @@ namespace NuProj.Tasks
                 Log.LogError($"File '{taskItem.ItemSpec}' has unexpected PackageDirectory metadata. Expected '{PackageDirectory.ContentFiles}', actual '{packageDirectory}'.");
             }
 
-            return targetSubdirectory;
+            var source = taskItem.GetMetadata(Metadata.FileSource);
+            var filename = Path.GetFileName(source);
+
+            if (targetSubdirectory.EndsWith(filename))
+            {
+                return targetSubdirectory;
+            }
+            else
+            {
+                return Path.Combine(targetSubdirectory, filename);
+            }
         }
 
         private static IVersionSpec AggregateVersions(IVersionSpec aggregate, IVersionSpec next)
