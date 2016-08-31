@@ -50,7 +50,8 @@ namespace NuProj.Tests
             {
                 new ManifestContentFiles { Include=@"any\any\1x1.png", BuildAction="EmbeddedResource", CopyToOutput="false", Flatten="false"},
                 new ManifestContentFiles { Include=@"any\any\TextFile.txt", BuildAction="None", CopyToOutput="true", Flatten="false"},
-                new ManifestContentFiles { Include=@"cs\any\Class.cs.pp", CopyToOutput="false", Flatten="false"}
+                new ManifestContentFiles { Include=@"cs\any\Class.cs.pp", CopyToOutput="false", Flatten="false"},
+                new ManifestContentFiles { Include=@"cs\any\Class1.cs.pp", CopyToOutput="false", Flatten="false"}
             };
 
             Assert.Equal<ManifestContentFiles>(

@@ -276,7 +276,16 @@ namespace NuProj.Tasks
             }
 
             var source = taskItem.GetMetadata(Metadata.FileSource);
-            return Path.Combine(targetSubdirectory, Path.GetFileName(source));
+            var filename = Path.GetFileName(source);
+
+            if (targetSubdirectory.EndsWith(filename))
+            {
+                return targetSubdirectory;
+            }
+            else
+            {
+                return Path.Combine(targetSubdirectory, filename);
+            }
         }
 
         private static IVersionSpec AggregateVersions(IVersionSpec aggregate, IVersionSpec next)
