@@ -23,6 +23,17 @@ namespace NuProj.Tasks
             bool.TryParse(metadataValue, out result);
             return result;
         }
+        public static string GetTextBetween(this string text, string start, string end, bool lastIndexOfStart = true, StringComparison comparisonType = StringComparison.Ordinal)
+        {
+            if (string.IsNullOrEmpty(text))
+                return null;
+            var i = lastIndexOfStart ? text.LastIndexOf(start, comparisonType) : text.IndexOf(start, comparisonType);
+            if (i == -1)
+                return null;
+            var value = text.Substring(i + start.Length);
+            i = value.IndexOf(end, comparisonType);
+            return i == -1 ? null : value.Substring(0, i);
+        }
 
         public static string GetMetadata(this ITaskItem taskItem, string metadataName, string defaultValue)
         {
