@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.IO;
+using System.Linq;
 using Microsoft.Build.Utilities;
 using NuGet;
 using NuGet.Versioning;
@@ -61,6 +62,55 @@ namespace NuProj.Tests
 
             Assert.True(result);
             Assert.Empty(task.PackageReferences);
+        }
+
+        [Fact]
+        public void Task_ReadPackagesConfig_NonStandardSolutionLocation()
+        {
+            var scenarioDirectory = Assets.GetScenarioDirectory("Task_ReadPackagesConfig_NonStandardSolutionLocation");
+            var projectPath = Path.Combine(scenarioDirectory, @"projects\D\D.csproj");
+            var solutionDir = Path.Combine(scenarioDirectory, "solution");
+            var packagesDir = Path.Combine(solutionDir, "packages");
+
+            var task = new ReadPackagesConfig();
+            task.Projects = new[] { new TaskItem(projectPath) };
+            task.SolutionDir = solutionDir;
+
+            var result = task.Execute();
+
+            Assert.True(result);
+            Assert.NotEmpty(task.PackageReferences);
+
+            var expectedItem = new AssertTaskItem(task.PackageReferences, "TestProj", items => Assert.Single(items)) {
+                {"Version", "1.2.34"},
+                {"TargetFramework", "net45"},
+                {"PackageDirectoryPath", Path.Combine(packagesDir, "TestProj.1.2.34")},
+            };
+
+            Assert.Single(expectedItem);
+        }
+
+        [Fact]
+        public void Task_ReadPackagesConfig_NonStandardSolutionLocation_NoSolutionContext()
+        {
+            var scenarioDirectory = Assets.GetScenarioDirectory("Task_ReadPackagesConfig_NonStandardSolutionLocation");
+            var projectPath = Path.Combine(scenarioDirectory, @"projects\D\D.csproj");
+
+            var task = new ReadPackagesConfig();
+            task.Projects = new[] { new TaskItem(projectPath) };
+
+            var result = task.Execute();
+
+            Assert.True(result);
+            Assert.NotEmpty(task.PackageReferences);
+
+            var expectedItem = new AssertTaskItem(task.PackageReferences, "TestProj", items => Assert.Single(items)) {
+                {"Version", "1.2.34"},
+                {"TargetFramework", "net45"},
+                {"PackageDirectoryPath", string.Empty},
+            };
+
+            Assert.Single(expectedItem);
         }
     }
 }
