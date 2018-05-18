@@ -16,6 +16,8 @@ namespace NuProj.Tasks
 {
     public class ReadPackagesConfig : Task
     {
+        public string SolutionDir { get; set; }
+
         [Required]
         public ITaskItem[] Projects { get; set; }
 
@@ -63,9 +65,17 @@ namespace NuProj.Tasks
             return item;
         }
 
-        private static string GetPackageDirectoryPath(string packagesConfigPath, string packageId, SemanticVersion packageVersion)
+        private string GetPackageDirectoryPath(string packagesConfigPath, string packageId, SemanticVersion packageVersion)
         {
             var packageDirectoryName = packageId + "." + packageVersion;
+
+            if (!string.IsNullOrWhiteSpace(SolutionDir))
+            {
+                var packageDirectoryPath = Path.Combine(SolutionDir, "packages", packageDirectoryName);
+                if (Directory.Exists(packageDirectoryPath))
+                    return packageDirectoryPath;
+            }
+
             var candidateFolder = Path.GetDirectoryName(packagesConfigPath);
             while (candidateFolder != null)
             {
