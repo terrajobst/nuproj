@@ -834,7 +834,7 @@
           Returns="@(NuGetDependency)">
 
       <!-- Read each project's packages.config file. -->
-      <ReadPackagesConfig Projects="@(_ProjectReferenceClosure)"
+      <ReadPackagesConfig SolutionDir="$(SolutionDir)" Projects="@(_ProjectReferenceClosure)"
                           Condition="'%(PackageDirectory)' == 'Lib'">
         <Output TaskParameter="PackageReferences"
                 ItemName="_PackageReference" />
